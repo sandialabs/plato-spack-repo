@@ -35,6 +35,7 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'services',       default=False,   description='Compile with services'           )
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
     variant( 'xtk',            default=False,   description='Enable XTK'                      )
+    variant( 'optimism',       default=False,   description='Enable OptimiSM and its Plato utilities')
 
     conflicts( '+expy', when='-platomain')
     conflicts( '+iso',  when='-stk')
@@ -48,6 +49,7 @@ class Platoengine(CMakePackage, CudaPackage):
     conflicts( '+expy', when='+dakota')
     conflicts( '~services', when='+dakota')
     conflicts( '+xtk', when='+cuda')
+    conflicts( '+optimism', when='~python_app')
 
     depends_on( 'mpi',            type=('build','link','run'))
     depends_on( 'cmake@3.0.0:',   type='build')
@@ -71,6 +73,8 @@ class Platoengine(CMakePackage, CudaPackage):
 
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+python', when='+python_app')
 
+    depends_on( 'py-plato-optimism', when='+optimism')
+
     depends_on( 'moris cppflags=\"-Wno-error=deprecated-declarations -Wno-error=type-limits\"', when='+xtk')
 
     def cmake_args(self):
@@ -79,7 +83,6 @@ class Platoengine(CMakePackage, CudaPackage):
         options = []
 
         trilinos_dir = spec['trilinos'].prefix
-        options.extend([ '-DSEACAS_PATH:FILEPATH={0}'.format(trilinos_dir) ])
         options.extend([ '-DTRILINOS_INSTALL_DIR:FILEPATH={0}'.format(trilinos_dir) ])
 
         if '+platomain' in spec:
@@ -154,6 +157,9 @@ class Platoengine(CMakePackage, CudaPackage):
 
         if '+sierra_tests' in spec:
           options.extend([ '-DSIERRA_TESTS_ENABLED=ON' ])
+
+        if '+optimism' in spec:
+          options.extend([ '-DOPTIMISM_TESTS_ENABLED=ON' ])
 
         return options
 

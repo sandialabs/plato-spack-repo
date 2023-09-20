@@ -80,7 +80,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('platoengine+expy',                           when='+verificationtests')
 
     depends_on('arborx~mpi~cuda~serial @v1.1',              when='+meshmap')
-    depends_on('amgx',                                      when='+amgx')
+    depends_on('amgx@2.2',                                  when='+amgx')
     depends_on('esp@BetaLin-2023-07-17', type=('build', 'link', 'run'),        when='+esp')
     depends_on('platoengine+esp',                           when='+esp')
     depends_on('numdiff',                                   when='+integration_tests')
@@ -190,6 +190,12 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         if '+stk' in spec['platoengine']:
           options.extend([ '-DPLATOANALYZE_STK_ENABLED=ON' ])
+
+        if '+expy' in spec['platoengine']:
+          options.extend([ '-DEXPY=ON' ])
+
+        if '+iso' in spec['platoengine']:
+          options.extend([ '-DENABLE_ISO=ON' ])
 
         if '+verificationtests' in spec:
           options.extend(['-DPLATOANALYZE_SMOKE_TESTS=ON'])

@@ -18,7 +18,7 @@ class Esp(Package):
     depends_on( 'python@3.8:', type=('run'), when='@121Lin' )
     depends_on( 'python@3.8:', type=('run'), when='@122Lin' )
     depends_on( 'python@3.9.13', type=('run'), when='@123Lin' )
-    depends_on( 'python@3.9.13', type=('run'), when='@BetaLin-2023-07-17' )
+    depends_on( 'python@3.10.6', type=('run'), when='@BetaLin-2023-07-17' )
 
     phases = ['install']
 
