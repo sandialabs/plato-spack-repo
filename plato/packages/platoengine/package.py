@@ -81,6 +81,13 @@ class Platoengine(CMakePackage, CudaPackage):
         spec = self.spec
 
         options = []
+        options.extend(
+            [
+                self.define("CMAKE_C_COMPILER", spec["mpi"].mpicc),
+                self.define("CMAKE_CXX_COMPILER", spec["mpi"].mpicxx),
+                self.define("CMAKE_Fortran_COMPILER", spec["mpi"].mpifc)
+            ]
+        )
 
         trilinos_dir = spec['trilinos'].prefix
         options.extend([ '-DTRILINOS_INSTALL_DIR:FILEPATH={0}'.format(trilinos_dir) ])
