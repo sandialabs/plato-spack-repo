@@ -1,0 +1,18 @@
+diff --git a/projects/MTK/src/stk_impl/cl_MTK_Mesh_Data_STK.hpp b/projects/MTK/src/stk_impl/cl_MTK_Mesh_Data_STK.hpp
+index e574ba0..c25010c 100644
+--- a/projects/MTK/src/stk_impl/cl_MTK_Mesh_Data_STK.hpp
++++ b/projects/MTK/src/stk_impl/cl_MTK_Mesh_Data_STK.hpp
+@@ -57,12 +57,11 @@ namespace moris
+             {
+                 delete mMeshReader;
+                 delete mMtkMeshBulkData;
+-                delete mMtkMeshMetaData;
+             }
+ 
+             // STK specific Member variables
+             stk::io::StkMeshIoBroker* mMeshReader      = nullptr;
+-            stk::mesh::MetaData*      mMtkMeshMetaData = nullptr;
++            std::shared_ptr<stk::mesh::MetaData> mMtkMeshMetaData = nullptr;
+             stk::mesh::BulkData*      mMtkMeshBulkData = nullptr;
+ 
+             // General mesh trait member variables

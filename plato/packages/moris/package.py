@@ -29,14 +29,14 @@ import subprocess
 class Moris(CMakePackage):
     """MORIS"""
 
-    git      = "ssh://git@github.com/kkmaute/moris"
-    #git      = "ssh://pegasus:/home/maute/codes/moris"
+    git = "https://github.com/kkmaute/moris.git"
 
     maintainers = ['kmaute']
 
-    version('main', branch='main', submodules=True, preferred=True)
+    version("main", branch="main", submodules=True)
+    version("0.0.1", commit="a25d7c925960cbea54f2aeaec854ec1a4c6c3bdf", submodules=True, preferred=True)
 
-    variant( 'default', default=True, description='Compile with default setting')
+    variant("default", default=True, description="Compile with default setting")
     variant("petsc",    default=True, description="Compile with support for petsc")
     variant("pardiso",  default=True, description="Compile with support for pardiso solver")
     variant("mumps",    default=False, description="Compile with support for mumps solver")
@@ -72,11 +72,14 @@ class Moris(CMakePackage):
     depends_on('petsc+mkl-pardiso',                  when="+petsc +pardiso")
     depends_on('petsc+mumps',                        when="+petsc +mumps")
 
+    depends_on('openssl')
 
     conflicts('openblas',   when='+pardiso')
     conflicts('openblas',   when='+mkl')
     conflicts('mkl',        when='+openblas')
 
+    patch('cl_MTK_Mesh_Data_STK.patch', when='^trilinos@14.4')
+    patch('cl_MTK_Mesh_Core_STK.patch', when='^trilinos@14.4')
 
     def cmake_args(self):
         spec = self.spec
@@ -154,5 +157,7 @@ class Moris(CMakePackage):
             print('WARNING: Could not determine which gfortran library to use. moris may not find the fortran runtime library correctly.')
 
         if '+openblas' in self.spec:
-            # TODO: This is untested
             env.set('OPENBLAS_DIR', self.spec['blas'].prefix)
+
+        env.set('SSL_LIBRARY_DIR', self.spec['openssl'].prefix + "/lib64")
+
