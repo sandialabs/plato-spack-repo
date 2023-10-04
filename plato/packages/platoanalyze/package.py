@@ -51,6 +51,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'python',     default=False,    description='Compile with python'          )
     variant( 'tpetra',     default=False,    description='Compile with Tpetra'          )
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
+    variant( 'umfpack',    default=False,    description='Compile with UMFPACK'         )
     variant( 'epetra',     default=True,     description='Compile with Epetra'          )
 
     variant( 'integration_tests', default=True, description='Compile with engine integration tests')
@@ -65,6 +66,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('trilinos+cuda+wrapper', when='+cuda')
     depends_on('trilinos+openmp', when='+openmp')
     depends_on('trilinos+tacho', when='+tacho')
+    depends_on('suite-sparse', when='+umfpack')
     depends_on('trilinos+tpetra+belos+ifpack2+amesos2+muelu+zoltan2',             when='+tpetra')
     depends_on('trilinos~tpetra~amesos2~ifpack2~belos~muelu~zoltan2',             when='~tpetra')
     depends_on('trilinos~epetra',                                                 when='~epetra')
@@ -147,6 +149,13 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         if '+tacho' in spec:
           options.extend([ '-DPLATOANALYZE_ENABLE_TACHO=ON' ])
+
+        if '+umfpack' in spec:
+          options.extend([ '-DPLATOANALYZE_ENABLE_UMFPACK=ON' ])
+          umfpack_lib_dir = spec['suite-sparse'].prefix+'/lib'
+          umfpack_inc_dir = spec['suite-sparse'].prefix+'/include'
+          options.extend([ '-DUMFPACK_LIB_DIR:PATH={0}'.format(umfpack_lib_dir) ])
+          options.extend([ '-DUMFPACK_INC_DIR:PATH={0}'.format(umfpack_inc_dir) ])
 
         if '+epetra' in spec:
           options.extend([ '-DPLATOANALYZE_ENABLE_EPETRA=ON' ])
