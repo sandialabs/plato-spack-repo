@@ -152,8 +152,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         if '+umfpack' in spec:
           options.extend([ '-DPLATOANALYZE_ENABLE_UMFPACK=ON' ])
-          umfpack_lib_dir = spec['suite-sparse'].prefix+'/lib'
-          umfpack_inc_dir = spec['suite-sparse'].prefix+'/include'
+          umfpack_lib_dir = spec['suite-sparse'].prefix.lib
+          umfpack_inc_dir = spec['suite-sparse'].prefix.include
           options.extend([ '-DUMFPACK_LIB_DIR:PATH={0}'.format(umfpack_lib_dir) ])
           options.extend([ '-DUMFPACK_INC_DIR:PATH={0}'.format(umfpack_inc_dir) ])
 
