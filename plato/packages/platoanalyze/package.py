@@ -227,6 +227,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
         return options
 
     def setup_run_environment(self, run_env):
-
+        run_env.prepend_path('LD_LIBRARY_PATH', self.spec['platoanalyze'].prefix.lib)
         if '+python' in self.spec:
           run_env.prepend_path('PYTHONPATH', self.prefix.lib)
