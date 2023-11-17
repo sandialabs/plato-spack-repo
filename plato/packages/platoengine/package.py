@@ -172,6 +172,7 @@ class Platoengine(CMakePackage, CudaPackage):
 
 
     def setup_run_environment(self, run_env):
+        run_env.prepend_path('LD_LIBRARY_PATH', self.spec['platoengine'].prefix.lib)
 
         if '+expy' in self.spec:
           run_env.prepend_path('PYTHONPATH', self.prefix.lib)
