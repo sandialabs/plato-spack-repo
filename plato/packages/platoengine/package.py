@@ -92,6 +92,11 @@ class Platoengine(CMakePackage, CudaPackage):
         trilinos_dir = spec['trilinos'].prefix
         options.extend([ '-DTRILINOS_INSTALL_DIR:FILEPATH={0}'.format(trilinos_dir) ])
 
+        if spec.satisfies('+cuda'):
+          options.extend(['-DPLATOENGINE_ENABLE_CUDA=ON'])
+        else:
+          options.extend(['-DPLATOENGINE_ENABLE_CUDA=OFF'])
+
         if '+platomain' in spec:
           options.extend([ '-DPLATOMAIN=ON' ])
 
@@ -111,16 +116,11 @@ class Platoengine(CMakePackage, CudaPackage):
         if '+regression' in spec:
           options.extend([ '-DREGRESSION=ON' ])
           options.extend([ '-DSEACAS=ON' ])
-          numdiff_dir = spec['numdiff'].prefix
-          options.extend([ '-DNUMDIFF_PATH:FILEPATH={0}'.format(numdiff_dir) ])
 
         if '+unit_testing' in spec:
           options.extend([ '-DUNIT_TESTING=ON' ])
-          # gtest_dir = spec['googletest'].prefix
         else:
           options.extend([ '-DUNIT_TESTING=OFF' ])
-
-          # options.extend([ '-DGTEST_HOME:FILEPATH={0}'.format(gtest_dir) ])
 
         if '+iso' in spec:
           options.extend([ '-DENABLE_ISO=ON' ])
