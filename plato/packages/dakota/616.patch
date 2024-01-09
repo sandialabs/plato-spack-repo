@@ -1,0 +1,392 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f61d7092a..a785731a0 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -22,10 +22,6 @@ project("Dakota" NONE)
+ 
+ message(STATUS "Configuring Dakota with CMake ${CMAKE_VERSION}")
+ 
+-# Dakota requires C++11
+-include(DakotaCxxOptions)
+-dakota_cxx_standard()
+-
+ # Developer convenience options first so take precedence over default options
+ if(DevDebugShared OR DevDebugStatic OR DevDebug)  # DevDebug is deprecated
+   include(DakotaDebug)
+@@ -213,6 +209,11 @@ set(ExportTarget DakotaTargets CACHE STRING
+ include(DakotaFindTrilinos)
+ dakota_find_trilinos()
+ 
++# Dakota will inherit the Trilinos C++ standard or C++11 if the Trilinos minimum
++# cannot be found
++include(DakotaCxxOptions)
++dakota_cxx_standard()
++
+ # Conditionally find X-Windows graphics deps
+ include(DakotaXGraphics)
+ dakota_find_x_graphics()
+diff --git a/cmake/DakotaConfig.cmake.in b/cmake/DakotaConfig.cmake.in
+index f4de34ad5..893d4d100 100644
+--- a/cmake/DakotaConfig.cmake.in
++++ b/cmake/DakotaConfig.cmake.in
+@@ -64,3 +64,6 @@ set(Dakota_TPL_INCLUDE_DIRS "@EXT_TPL_INCDIRS@")
+ set(Dakota_TPL_LIBRARY_DIRS "@EXT_TPL_LIBDIRS@")
+ 
+ set(Dakota_TPL_LIBRARIES "@EXT_TPL_LIBS@")
++
++include(CMakeFindDependencyMacro)
++find_dependency(Boost @dakota_boost_version@ REQUIRED COMPONENTS @dakota_boost_libs@)
+diff --git a/cmake/DakotaCxxOptions.cmake b/cmake/DakotaCxxOptions.cmake
+index ce94c8a80..cba97fffa 100644
+--- a/cmake/DakotaCxxOptions.cmake
++++ b/cmake/DakotaCxxOptions.cmake
+@@ -6,9 +6,17 @@ macro(dakota_cxx_standard)
+ 
+   # Require C++11 at a minimum, but allow newer standards
+   # Do this prior to other flag settings and enabling the C++ language
+-  if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
+-    set(CMAKE_CXX_STANDARD 11 CACHE STRING
+-      "Dakota strictly requires C++11 or better")
++  find_trilinos_cxx_std(trilinos_cxx_std)
++  if(trilinos_cxx_std STREQUAL "Trilinos_cxx_std-NOTFOUND")
++    if (NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD EQUAL 98)
++      set(CMAKE_CXX_STANDARD 11 CACHE STRING
++        "Dakota strictly requires C++11 or better")
++    endif()
++    message(STATUS "Dakota could not determine CXX standard from Trilinos, using default C++{CMAKE_CXX_STANDARD}")
++  else()
++    message(STATUS "Dakota inheriting C++{trilinos_cxx_std} from Trilinos")
++    set(CMAKE_CXX_STANDARD ${trilinos_cxx_std} CACHE STRING
++        "Dakota inheriting C++{trilinos_cxx_std} from Trilinos")
+   endif()
+   if (NOT DEFINED CMAKE_CXX_EXTENSIONS)
+     set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL
+@@ -28,3 +36,31 @@ macro(dakota_strict_warnings target_name)
+     target_compile_options(${target_name} PRIVATE "-Wall" "-Wextra" "-Wpedantic")
+   endif()
+ endmacro()
++
++function(find_trilinos_cxx_std variable)
++  # Gets the C++ standard used to compile Kokkos.  This function would not be
++  # necessary if consumers of Trilinos consumed its targets, then CMake would
++  # infer C++ minimum standards from the targets.  But, alas, many projects link
++  # against ${Trilinos_LIBRARIES} (or similar) so that interface properties are
++  # not inherited.  Sigh...
++  get_property(
++    kokkos_compile_features
++    TARGET Kokkos::kokkos
++    PROPERTY INTERFACE_COMPILE_FEATURES
++  )
++  set(kokkos_cxx_standard_FOUND)
++  foreach(feature ${kokkos_compile_features})
++    string(FIND ${feature} cxx_std_ pos)
++    if (${pos} EQUAL 0)
++      string(REPLACE "_" ";" tmp ${feature})
++      list(GET tmp 2 kokkos_cxx_standard)
++      set(kokkos_cxx_standard_FOUND TRUE)
++      break()
++    endif()
++  endforeach()
++  if(NOT kokkos_cxx_standard_FOUND)
++    set(${variable} "Trilinos_cxx_std-NOTFOUND" PARENT_SCOPE)
++  else()
++    set(${variable} ${kokkos_cxx_standard} PARENT_SCOPE)
++  endif()
++endfunction()
+\ No newline at end of file
+Submodule packages/external contains modified content
+diff --git a/packages/external/PSUADE/DakotaPsuade.C b/packages/external/PSUADE/DakotaPsuade.C
+index 989ddf9c..2ed14c48 100644
+--- a/packages/external/PSUADE/DakotaPsuade.C
++++ b/packages/external/PSUADE/DakotaPsuade.C
+@@ -11,6 +11,7 @@
+ //- Owner:       Brian M. Adams, Sandia National Laboratories
+ 
+ #include "DakotaPsuade.H"
++#include <random>
+ #include <cstddef>
+ #include <algorithm>
+ #include <vector>
+@@ -172,6 +173,8 @@ void DakotaPsuade::generateRandomIvector(int num_inputs, int *permute)
+   // copying
+   std::vector<int> p;
+   for (int i=0; i<num_inputs; i++) p.push_back(i);
+-  std::random_shuffle(p.begin(), p.end(), rngPtr->stl_rng());
++  std::random_device rd;
++  std::mt19937 g(rd());
++  std::shuffle(p.begin(), p.end(), g);  //rngPtr->stl_rng());
+   for (int i=0; i<num_inputs; i++) permute[i] = p[i];
+ }
+diff --git a/packages/external/approxnn/src/ANN.cpp b/packages/external/approxnn/src/ANN.cpp
+index ccacc699..ba7f96b0 100644
+--- a/packages/external/approxnn/src/ANN.cpp
++++ b/packages/external/approxnn/src/ANN.cpp
+@@ -48,9 +48,9 @@ ANNdist annDist(						// interpoint squared distance
+ 	ANNpoint			p,
+ 	ANNpoint			q)
+ {
+-	register int d;
+-	register ANNcoord diff;
+-	register ANNcoord dist;
++	int d;
++	ANNcoord diff;
++	ANNcoord dist;
+ 
+ 	dist = 0;
+ 	for (d = 0; d < dim; d++) {
+diff --git a/packages/external/approxnn/src/kd_fix_rad_search.cpp b/packages/external/approxnn/src/kd_fix_rad_search.cpp
+index 87eb757d..c8fd0be6 100644
+--- a/packages/external/approxnn/src/kd_fix_rad_search.cpp
++++ b/packages/external/approxnn/src/kd_fix_rad_search.cpp
+@@ -147,11 +147,11 @@ void ANNkd_split::ann_FR_search(ANNdist box_dist)
+ 
+ void ANNkd_leaf::ann_FR_search(ANNdist box_dist)
+ {
+-	register ANNdist dist;				// distance to data point
+-	register ANNcoord* pp;				// data coordinate pointer
+-	register ANNcoord* qq;				// query coordinate pointer
+-	register ANNcoord t;
+-	register int d;
++	ANNdist dist;				// distance to data point
++	ANNcoord* pp;				// data coordinate pointer
++	ANNcoord* qq;				// query coordinate pointer
++	ANNcoord t;
++	int d;
+ 
+ 	for (int i = 0; i < n_pts; i++) {	// check points in bucket
+ 
+diff --git a/packages/external/approxnn/src/kd_pr_search.cpp b/packages/external/approxnn/src/kd_pr_search.cpp
+index edb0479f..b2458541 100644
+--- a/packages/external/approxnn/src/kd_pr_search.cpp
++++ b/packages/external/approxnn/src/kd_pr_search.cpp
+@@ -180,12 +180,12 @@ void ANNkd_split::ann_pri_search(ANNdist box_dist)
+ 
+ void ANNkd_leaf::ann_pri_search(ANNdist box_dist)
+ {
+-	register ANNdist dist;				// distance to data point
+-	register ANNcoord* pp;				// data coordinate pointer
+-	register ANNcoord* qq;				// query coordinate pointer
+-	register ANNdist min_dist;			// distance to k-th closest point
+-	register ANNcoord t;
+-	register int d;
++	ANNdist dist;				// distance to data point
++	ANNcoord* pp;				// data coordinate pointer
++	ANNcoord* qq;				// query coordinate pointer
++	ANNdist min_dist;			// distance to k-th closest point
++	ANNcoord t;
++	int d;
+ 
+ 	min_dist = ANNprPointMK->max_key(); // k-th smallest distance so far
+ 
+diff --git a/packages/external/approxnn/src/kd_search.cpp b/packages/external/approxnn/src/kd_search.cpp
+index 5004ef79..bac4673f 100644
+--- a/packages/external/approxnn/src/kd_search.cpp
++++ b/packages/external/approxnn/src/kd_search.cpp
+@@ -171,12 +171,12 @@ void ANNkd_split::ann_search(ANNdist box_dist)
+ 
+ void ANNkd_leaf::ann_search(ANNdist box_dist)
+ {
+-	register ANNdist dist;				// distance to data point
+-	register ANNcoord* pp;				// data coordinate pointer
+-	register ANNcoord* qq;				// query coordinate pointer
+-	register ANNdist min_dist;			// distance to k-th closest point
+-	register ANNcoord t;
+-	register int d;
++	ANNdist dist;				// distance to data point
++	ANNcoord* pp;				// data coordinate pointer
++	ANNcoord* qq;				// query coordinate pointer
++	ANNdist min_dist;			// distance to k-th closest point
++	ANNcoord t;
++	int d;
+ 
+ 	min_dist = ANNkdPointMK->max_key(); // k-th smallest distance so far
+ 
+diff --git a/packages/external/approxnn/src/kd_util.cpp b/packages/external/approxnn/src/kd_util.cpp
+index 06d65b83..37f25d7f 100644
+--- a/packages/external/approxnn/src/kd_util.cpp
++++ b/packages/external/approxnn/src/kd_util.cpp
+@@ -127,10 +127,10 @@ ANNdist annBoxDistance(			// compute distance from point to box
+ 	const ANNpoint		hi,				// high point of box
+ 	int					dim)			// dimension of space
+ {
+-	register ANNdist dist = 0.0;		// sum of squared distances
+-	register ANNdist t;
++	ANNdist dist = 0.0;		// sum of squared distances
++	ANNdist t;
+ 
+-	for (register int d = 0; d < dim; d++) {
++	for (int d = 0; d < dim; d++) {
+ 		if (q[d] < lo[d]) {				// q is left of box
+ 			t = ANNdist(lo[d]) - ANNdist(q[d]);
+ 			dist = ANN_SUM(dist, ANN_POW(t));
+@@ -238,8 +238,8 @@ void annMedianSplit(
+ 	int l = 0;							// left end of current subarray
+ 	int r = n-1;						// right end of current subarray
+ 	while (l < r) {
+-		register int i = (r+l)/2;		// select middle as pivot
+-		register int k;
++		int i = (r+l)/2;		// select middle as pivot
++		int k;
+ 
+ 		if (PA(i,d) > PA(r,d))			// make sure last > pivot
+ 			PASWAP(i,r)
+diff --git a/packages/external/approxnn/src/pr_queue.h b/packages/external/approxnn/src/pr_queue.h
+index 3f4b75c8..fe8ead24 100644
+--- a/packages/external/approxnn/src/pr_queue.h
++++ b/packages/external/approxnn/src/pr_queue.h
+@@ -86,9 +86,9 @@ public:
+ 		PQinfo inf)						// item info
+ 		{
+ 			if (++n > max_size) annError("Priority queue overflow.", ANNabort);
+-			register int r = n;
++			int r = n;
+ 			while (r > 1) {				// sift up new item
+-				register int p = r/2;
++				int p = r/2;
+ 				ANN_FLOP(1)				// increment floating ops
+ 				if (pq[p].key <= kv)	// in proper order
+ 					break;
+@@ -105,9 +105,9 @@ public:
+ 		{
+ 			kv = pq[1].key;				// key of min item
+ 			inf = pq[1].info;			// information of min item
+-			register PQkey kn = pq[n--].key;// last item in queue
+-			register int p = 1;			// p points to item out of position
+-			register int r = p<<1;		// left child of p
++			PQkey kn = pq[n--].key;// last item in queue
++			int p = 1;			// p points to item out of position
++			int r = p<<1;		// left child of p
+ 			while (r <= n) {			// while r is still within the heap
+ 				ANN_FLOP(2)				// increment floating ops
+ 										// set r to smaller child of p
+diff --git a/packages/external/approxnn/src/pr_queue_k.h b/packages/external/approxnn/src/pr_queue_k.h
+index c2f01c34..f7bddcff 100644
+--- a/packages/external/approxnn/src/pr_queue_k.h
++++ b/packages/external/approxnn/src/pr_queue_k.h
+@@ -100,7 +100,7 @@ public:
+ 		PQKkey kv,						// key value
+ 		PQKinfo inf)					// item info
+ 		{
+-			register int i;
++			int i;
+ 										// slide larger values up
+ 			for (i = n; i > 0; i--) {
+ 				if (mk[i-1].key > kv)
+diff --git a/packages/external/trilinos/cmake/ProjectCiFileChangeLogic.py b/packages/external/trilinos/cmake/ProjectCiFileChangeLogic.py
+deleted file mode 120000
+index 9b5f6464..00000000
+--- a/packages/external/trilinos/cmake/ProjectCiFileChangeLogic.py
++++ /dev/null
+@@ -1 +0,0 @@
+-../commonTools/framework/ProjectCiFileChangeLogic.py
+\ No newline at end of file
+Submodule packages/pecos contains modified content
+diff --git a/packages/pecos/util/src/math_tools.cpp b/packages/pecos/util/src/math_tools.cpp
+index b955613a..f3d01255 100644
+--- a/packages/pecos/util/src/math_tools.cpp
++++ b/packages/pecos/util/src/math_tools.cpp
+@@ -6,6 +6,7 @@
+     For more information, see the README file in the top Pecos directory.
+     _______________________________________________________________________ */
+ 
++#include <random>
+ #include "math_tools.hpp"
+ #include "teuchos_data_types.hpp"
+ 
+@@ -364,7 +365,9 @@ void get_permutations( IntMatrix &permutations,
+ 	  random[i] = i;
+ 	}
+ 
+-      std::random_shuffle( random.begin(), random.end() );
++      std::random_device rd;
++      std::mt19937 g(rd());
++      std::shuffle( random.begin(), random.end(), g );
+ 
+       for ( int i = 0; i < M; i++ )
+ 	{
+Submodule packages/surfpack contains modified content
+diff --git a/packages/surfpack/src/ModelFitness.cpp b/packages/surfpack/src/ModelFitness.cpp
+index eeadc7f..e6a8d77 100644
+--- a/packages/surfpack/src/ModelFitness.cpp
++++ b/packages/surfpack/src/ModelFitness.cpp
+@@ -6,6 +6,7 @@
+     For more information, see the README file in the top Surfpack directory.
+     _______________________________________________________________________ */
+ 
++#include <random>
+ #include "surfpack.h"
+ #include "SurfData.h"
+ #include "SurfpackModel.h"
+@@ -16,7 +17,6 @@ using std::cout;
+ using std::endl;
+ using std::max_element;
+ using std::min_element;
+-using std::random_shuffle;
+ using std::set;
+ using std::string;
+ using std::vector;
+@@ -267,7 +267,9 @@ leaveout_estimates(VecDbl& estimates, const SurfpackModel& sm,
+ 
+   VecUns indices(my_data.size()); 
+   for (unsigned i = 0; i < indices.size(); i++) indices[i] = i;
+-  random_shuffle(indices.begin(),indices.end(),shared_rng());
++  std::random_device rd;
++  std::mt19937 g(rd());
++  std::shuffle(indices.begin(),indices.end(),g); // shared_rng());
+   estimates.resize(my_data.size());
+   for (unsigned partition = 0; partition < n_final; partition++) {
+     //cout << "part: " << partition << endl;
+diff --git a/src/ActiveSubspaceModel.cpp b/src/ActiveSubspaceModel.cpp
+index 3c426f7ef..370e35817 100644
+--- a/src/ActiveSubspaceModel.cpp
++++ b/src/ActiveSubspaceModel.cpp
+@@ -7,6 +7,7 @@
+     For more information, see the README file in the top Dakota directory.
+     _______________________________________________________________________ */
+ 
++#include <random>
+ #include "ActiveSubspaceModel.hpp"
+ #include "ProbabilityTransformModel.hpp"
+ #include "NonDLHSSampling.hpp"
+@@ -959,8 +960,9 @@ unsigned int ActiveSubspaceModel::compute_cross_validation_metric()
+     for (int ind = 0; ind < n; ++ind)
+       random_index_vec.push_back(ind);
+     // shuffle these indices:
+-    std::random_shuffle(random_index_vec.begin(), random_index_vec.end(),
+-			rnum_variate_gen);
++    std::random_device rd;
++    std::mt19937 g(rd());
++    std::shuffle(random_index_vec.begin(), random_index_vec.end(),g);
+ 
+     // Compute the size of each fold:
+     std::vector<int> fold_size(num_folds, n / num_folds);
+@@ -1462,5 +1464,3 @@ variables_mapping(const Variables& recast_y_vars, Variables& sub_model_x_vars)
+ }
+ 
+ }  // namespace Dakota
+-
+-
+diff --git a/src/PluginInterface.cpp b/src/PluginInterface.cpp
+index 60f400821..2f181e868 100644
+--- a/src/PluginInterface.cpp
++++ b/src/PluginInterface.cpp
+@@ -12,6 +12,7 @@
+ 
+ #include <boost/dll/import.hpp>
+ #include <boost/filesystem.hpp>
++#include <boost/version.hpp>
+ 
+ 
+ namespace Dakota {
+@@ -111,7 +112,11 @@ void PluginInterface::load_plugin()
+ {
+   if (pluginInterface) return;
+   try {
++#if BOOST_VERSION <= 107600
+     pluginInterface = boost::dll::import<DakotaPlugins::DakotaInterfaceAPI>
++#else
++    pluginInterface = boost::dll::import_symbol<DakotaPlugins::DakotaInterfaceAPI>
++#endif
+       (pluginPath,
+ 	 "dakota_interface_plugin"  // name of the symbol to import
+ 	 // TODO: append .dll, .so, .dylib via
