@@ -69,9 +69,9 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'esp@BetaLin-2023-11-09', type=('build', 'link', 'run'), when='+esp')
     depends_on( 'dakota', when='+dakota')
     depends_on( 'numdiff', when='+regression')
-    depends_on( 'boost+filesystem+serialization+system+program_options+regex')
+    depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi')
 
-    depends_on( 'boost+filesystem+serialization+system+program_options+regex+python', when='+python_app')
+    depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+python', when='+python_app')
 
     depends_on( 'py-plato-optimism', when='+optimism')
 
