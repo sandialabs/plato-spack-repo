@@ -34,7 +34,6 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'dakota',         default=False,   description='Compile with Dakota'             )
     variant( 'services',       default=False,   description='Compile with services'           )
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
-    variant( 'xtk',            default=False,   description='Enable XTK'                      )
     variant( 'optimism',       default=False,   description='Enable OptimiSM and its Plato utilities')
 
     conflicts( '+expy', when='-platomain')
@@ -48,7 +47,6 @@ class Platoengine(CMakePackage, CudaPackage):
     conflicts( '@0.6.0', when='+prune')
     conflicts( '+expy', when='+dakota')
     conflicts( '~services', when='+dakota')
-    conflicts( '+xtk', when='+cuda')
     conflicts( '+optimism', when='~python_app')
 
     depends_on( 'mpi',            type=('build','link','run'))
@@ -74,8 +72,6 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+python', when='+python_app')
 
     depends_on( 'py-plato-optimism', when='+optimism')
-
-    depends_on( 'moris cppflags=\"-Wno-error=deprecated-declarations -Wno-error=type-limits\"', when='+xtk')
 
     def cmake_args(self):
         spec = self.spec
@@ -130,11 +126,6 @@ class Platoengine(CMakePackage, CudaPackage):
 
         if '+stk' in spec:
           options.extend([ '-DSTK_ENABLED=ON' ])
-
-        if '+xtk' in spec:
-          options.extend([ '-DXTK_ENABLED=ON' ])
-          xtk_inc_dir = spec['moris'].prefix
-          options.extend([ '-DXTK_INSTALL:PATH={0}'.format(xtk_inc_dir) ])
 
         if '+esp' in spec:
           options.extend([ '-DESP_ENABLED=ON' ])
