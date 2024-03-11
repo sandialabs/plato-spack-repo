@@ -6,6 +6,8 @@ class Esp(Package):
 
     homepage = "https://acdl.mit.edu/ESP/"
 
+    version('BetaLin-2023-11-09', sha256='a63df74f90c926c6ca127cb8e973a61502739b94bb7c0d2579668a888c050c94', url='https://acdl.mit.edu/ESP/archive/ESPbeta-linux-x86_64_2023-11-13.tgz')
+    version('BetaLin-2023-10-11', sha256='5798cdc86712e6ae131d72077a12a4612a5bf74a6f73b82797baf2293fd85493', url='https://acdl.mit.edu/ESP/archive/ESPbeta-linux-x86_64_2023-10-11.tgz')
     version('BetaLin-2023-07-17', sha256='483edb0d48e3be659bfa927e6424eb7c0502fd1b7ad6cefaeee69a65808dc048', url='https://acdl.mit.edu/ESP/archive/ESPbeta-linux-x86_64_2023-07-17.tgz')
     version('123Lin', sha256='06a3417594af180daa4c18cdceb82ba8885c1350b05c21dde466320dcab4d286', url='https://acdl.mit.edu/ESP/PreBuilts/ESP123-linux-x86_64.tgz',preferred=True)
     version('122Lin', sha256='a629c089f488ca9ce2da9fcaed0fdcba60bb4f2e9287cd3725b296e0fa6af197', url='https://acdl.mit.edu/ESP/archive/ESP122Lin.tgz')
@@ -19,6 +21,8 @@ class Esp(Package):
     depends_on( 'python@3.8:', type=('run'), when='@122Lin' )
     depends_on( 'python@3.9.13', type=('run'), when='@123Lin' )
     depends_on( 'python@3.10.6', type=('run'), when='@BetaLin-2023-07-17' )
+    depends_on( 'python@3.10.6', type=('run'), when='@BetaLin-2023-10-11' )
+    depends_on( 'python@3.10.6', type=('run'), when='@BetaLin-2023-11-09' )
 
     phases = ['install']
 

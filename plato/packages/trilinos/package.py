@@ -41,6 +41,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     version("master", branch="master")
     version("develop", branch="develop")
+    version("15.0.0", sha256="5651f1f967217a807f2c418a73b7e649532824dbf2742fa517951d6cc11518fb")
     version("14.4.0", sha256="8e7d881cf6677aa062f7bfea8baa1e52e8956aa575d6a4f90f2b6f032632d4c6")
     version("14.2.0", sha256="c96606e5cd7fc9d25b9dc20719cd388658520d7cbbd2b4de77a118440d1e0ccb")
     version("14.0.0", sha256="054d2fabdf70fce0dfaeb20eed265bd7894045d3e00c3d1ddb72d1c77c339ca1")
@@ -468,6 +469,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     # ###################### Patches ##########################
 
     patch("umfpack_from_suitesparse.patch", when="@11.14.1:12.8.1")
+    patch("seacas_zoltan.patch", when="@15.0.0")
     for _compiler in ["xl", "xl_r", "clang"]:
         patch("xlf_seacas.patch", when="@12.10.1:12.12.1 %" + _compiler)
         patch("xlf_tpetra.patch", when="@12.12.1 %" + _compiler)

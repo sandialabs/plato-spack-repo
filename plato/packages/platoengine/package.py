@@ -34,7 +34,6 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'dakota',         default=False,   description='Compile with Dakota'             )
     variant( 'services',       default=False,   description='Compile with services'           )
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
-    variant( 'xtk',            default=False,   description='Enable XTK'                      )
     variant( 'optimism',       default=False,   description='Enable OptimiSM and its Plato utilities')
 
     conflicts( '+expy', when='-platomain')
@@ -48,13 +47,12 @@ class Platoengine(CMakePackage, CudaPackage):
     conflicts( '@0.6.0', when='+prune')
     conflicts( '+expy', when='+dakota')
     conflicts( '~services', when='+dakota')
-    conflicts( '+xtk', when='+cuda')
     conflicts( '+optimism', when='~python_app')
 
     depends_on( 'mpi',            type=('build','link','run'))
     depends_on( 'cmake@3.0.0:',   type='build')
  
-    depends_on( 'trilinos@14.4.0+exodus+chaco+intrepid+shards+rol gotype=int cxxstd=17')
+    depends_on( 'trilinos@15.0.0+exodus+chaco+intrepid+shards+rol gotype=int cxxstd=17')
     depends_on( 'trilinos+boost+stk', when='+stk')
     depends_on( 'trilinos+percept+zoltan+boost+stk', when='+prune')
     depends_on( 'trilinos+cuda+wrapper', when='+cuda')
@@ -66,16 +64,14 @@ class Platoengine(CMakePackage, CudaPackage):
     # py-setuptools later than v44.1.0 require python 3.x
     depends_on( 'py-numpy',      when='+expy'         )
 
-    depends_on( 'esp@BetaLin-2023-07-17', type=('build', 'link', 'run'), when='+esp')
+    depends_on( 'esp@BetaLin-2023-11-09', type=('build', 'link', 'run'), when='+esp')
     depends_on( 'dakota', when='+dakota')
     depends_on( 'numdiff', when='+regression')
-    depends_on( 'boost+filesystem+serialization+system+program_options+regex')
+    depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi')
 
-    depends_on( 'boost+filesystem+serialization+system+program_options+regex+python', when='+python_app')
+    depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+python', when='+python_app')
 
     depends_on( 'py-plato-optimism', when='+optimism')
-
-    depends_on( 'moris cppflags=\"-Wno-error=deprecated-declarations -Wno-error=type-limits\"', when='+xtk')
 
     def cmake_args(self):
         spec = self.spec
@@ -91,6 +87,11 @@ class Platoengine(CMakePackage, CudaPackage):
 
         trilinos_dir = spec['trilinos'].prefix
         options.extend([ '-DTRILINOS_INSTALL_DIR:FILEPATH={0}'.format(trilinos_dir) ])
+
+        if spec.satisfies('+cuda'):
+          options.extend(['-DPLATOENGINE_ENABLE_CUDA=ON'])
+        else:
+          options.extend(['-DPLATOENGINE_ENABLE_CUDA=OFF'])
 
         if '+platomain' in spec:
           options.extend([ '-DPLATOMAIN=ON' ])
@@ -111,16 +112,11 @@ class Platoengine(CMakePackage, CudaPackage):
         if '+regression' in spec:
           options.extend([ '-DREGRESSION=ON' ])
           options.extend([ '-DSEACAS=ON' ])
-          numdiff_dir = spec['numdiff'].prefix
-          options.extend([ '-DNUMDIFF_PATH:FILEPATH={0}'.format(numdiff_dir) ])
 
         if '+unit_testing' in spec:
           options.extend([ '-DUNIT_TESTING=ON' ])
-          # gtest_dir = spec['googletest'].prefix
         else:
           options.extend([ '-DUNIT_TESTING=OFF' ])
-
-          # options.extend([ '-DGTEST_HOME:FILEPATH={0}'.format(gtest_dir) ])
 
         if '+iso' in spec:
           options.extend([ '-DENABLE_ISO=ON' ])
@@ -130,11 +126,6 @@ class Platoengine(CMakePackage, CudaPackage):
 
         if '+stk' in spec:
           options.extend([ '-DSTK_ENABLED=ON' ])
-
-        if '+xtk' in spec:
-          options.extend([ '-DXTK_ENABLED=ON' ])
-          xtk_inc_dir = spec['moris'].prefix
-          options.extend([ '-DXTK_INSTALL:PATH={0}'.format(xtk_inc_dir) ])
 
         if '+esp' in spec:
           options.extend([ '-DESP_ENABLED=ON' ])
@@ -172,6 +163,7 @@ class Platoengine(CMakePackage, CudaPackage):
 
 
     def setup_run_environment(self, run_env):
+        run_env.prepend_path('LD_LIBRARY_PATH', self.spec['platoengine'].prefix.lib)
 
         if '+expy' in self.spec:
           run_env.prepend_path('PYTHONPATH', self.prefix.lib)

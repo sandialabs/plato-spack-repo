@@ -51,6 +51,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'python',     default=False,    description='Compile with python'          )
     variant( 'tpetra',     default=False,    description='Compile with Tpetra'          )
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
+    variant( 'umfpack',    default=False,    description='Compile with UMFPACK'         )
     variant( 'epetra',     default=True,     description='Compile with Epetra'          )
 
     variant( 'integration_tests', default=True, description='Compile with engine integration tests')
@@ -61,10 +62,11 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'micromorphic', default=False, description='Compile with micromorphic physics' ) 
     variant( 'all_penalty', default=False, description='Compile with all penalization schemes, including RAMP and Heaviside' )
 
-    depends_on('trilinos@14.4.0+kokkos+kokkoskernels+exodus gotype=int cxxstd=17')
+    depends_on('trilinos@15.0.0+kokkos+kokkoskernels+exodus gotype=int cxxstd=17')
     depends_on('trilinos+cuda+wrapper', when='+cuda')
     depends_on('trilinos+openmp', when='+openmp')
     depends_on('trilinos+tacho', when='+tacho')
+    depends_on('suite-sparse', when='+umfpack')
     depends_on('trilinos+tpetra+belos+ifpack2+amesos2+muelu+zoltan2',             when='+tpetra')
     depends_on('trilinos~tpetra~amesos2~ifpack2~belos~muelu~zoltan2',             when='~tpetra')
     depends_on('trilinos~epetra',                                                 when='~epetra')
@@ -81,7 +83,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
     depends_on('arborx~mpi~cuda~serial @v1.1',              when='+meshmap')
     depends_on('amgx@2.2',                                  when='+amgx')
-    depends_on('esp@BetaLin-2023-07-17', type=('build', 'link', 'run'),        when='+esp')
+    depends_on('esp@BetaLin-2023-11-09', type=('build', 'link', 'run'),        when='+esp')
     depends_on('platoengine+esp',                           when='+esp')
     depends_on('numdiff',                                   when='+integration_tests')
     depends_on('py-numpy',                                  when='+dakota_tests')
@@ -147,6 +149,13 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         if '+tacho' in spec:
           options.extend([ '-DPLATOANALYZE_ENABLE_TACHO=ON' ])
+
+        if '+umfpack' in spec:
+          options.extend([ '-DPLATOANALYZE_ENABLE_UMFPACK=ON' ])
+          umfpack_lib_dir = spec['suite-sparse'].prefix.lib
+          umfpack_inc_dir = spec['suite-sparse'].prefix.include
+          options.extend([ '-DUMFPACK_LIB_DIR:PATH={0}'.format(umfpack_lib_dir) ])
+          options.extend([ '-DUMFPACK_INC_DIR:PATH={0}'.format(umfpack_inc_dir) ])
 
         if '+epetra' in spec:
           options.extend([ '-DPLATOANALYZE_ENABLE_EPETRA=ON' ])
@@ -218,6 +227,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
         return options
 
     def setup_run_environment(self, run_env):
-
+        run_env.prepend_path('LD_LIBRARY_PATH', self.spec['platoanalyze'].prefix.lib)
         if '+python' in self.spec:
           run_env.prepend_path('PYTHONPATH', self.prefix.lib)
