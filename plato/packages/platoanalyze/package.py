@@ -53,6 +53,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
     variant( 'umfpack',    default=False,    description='Compile with UMFPACK'         )
     variant( 'epetra',     default=True,     description='Compile with Epetra'          )
+    variant( 'build_with_sanitizers',       default=False,   description='Build with sanitizer flags')
 
     variant( 'integration_tests', default=True, description='Compile with engine integration tests')
     variant( 'dakota_tests', default=False, description='Compile with Dakota integration tests')
@@ -223,6 +224,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         if '+all_penalty' in spec:
             options.extend(['-DALL_PENALTY=ON'])
+
+        options.append(self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","build_with_sanitizers"))
 
         return options
 

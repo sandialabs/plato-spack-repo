@@ -27,7 +27,7 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'expy',           default=False,   description='Compile exodus/python API'       )
     variant( 'iso',            default=False,   description='Turn on iso extraction'          )
     variant( 'platoproxy',     default=False,   description='Compile PlatoProxy'              )
-    variant( 'python_app',     default=False,   description='Compile PythonInterpreter app'              )
+    variant( 'python_app',     default=False,   description='Compile PythonInterpreter app'   )
     variant( 'prune',          default=False,   description='Turn on use of prune and refine' )
     variant( 'stk',            default=False,   description='Turn on use of stk'              )
     variant( 'tpetra_tests',   default=False,   description='Configure Tpetra tests'          )
@@ -35,6 +35,7 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'services',       default=False,   description='Compile with services'           )
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
     variant( 'optimism',       default=False,   description='Enable OptimiSM and its Plato utilities')
+    variant( 'build_with_sanitizers',       default=False,   description='Build with sanitizer flags')
 
     conflicts( '+expy', when='-platomain')
     conflicts( '+iso',  when='-stk')
@@ -57,20 +58,16 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'trilinos+percept+zoltan+boost+stk', when='+prune')
     depends_on( 'trilinos+cuda+wrapper', when='+cuda')
     depends_on( 'trilinos~cuda', when='+dakota')
-
     depends_on( 'googletest',                                      when='+unit_testing' )
     depends_on( 'python@3.8:',    type=('build', 'link', 'run'), when='+expy'    )
     depends_on( 'nlopt',                                         when='+expy'         )
     # py-setuptools later than v44.1.0 require python 3.x
     depends_on( 'py-numpy',      when='+expy'         )
-
     depends_on( 'esp@BetaLin-2023-11-09', type=('build', 'link', 'run'), when='+esp')
     depends_on( 'dakota', when='+dakota')
     depends_on( 'numdiff', when='+regression')
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi')
-
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+python', when='+python_app')
-
     depends_on( 'py-plato-optimism', when='+optimism')
 
     def cmake_args(self):
@@ -88,77 +85,51 @@ class Platoengine(CMakePackage, CudaPackage):
         trilinos_dir = spec['trilinos'].prefix
         options.extend([ '-DTRILINOS_INSTALL_DIR:FILEPATH={0}'.format(trilinos_dir) ])
 
-        if spec.satisfies('+cuda'):
-          options.extend(['-DPLATOENGINE_ENABLE_CUDA=ON'])
-        else:
-          options.extend(['-DPLATOENGINE_ENABLE_CUDA=OFF'])
+        options.extend(
+            [
+                self.define_from_variant("PLATOENGINE_ENABLE_CUDA","cuda"),
+                self.define_from_variant("PLATOMAIN","platomain"),
+                self.define_from_variant("PLATOPROXY","platoproxy"),
+                self.define_from_variant("PYTHON_INTERPRETER_APP","python_app"),
+                self.define_from_variant("PLATOSTATICS","platostatics"),
+                self.define_from_variant("UNIT_TESTING","unit_testing"),
+                self.define_from_variant("ENABLE_ISO","iso"),
+                self.define_from_variant("ENABLE_PRUNE","prune"),
+                self.define_from_variant("STK_ENABLED","stk"),
+                self.define_from_variant("PLATO_TPETRA","tpetra_tests"),
+                self.define_from_variant("ENABLE_PLATO_SERVICES","services"),
+                self.define_from_variant("SIERRA_TESTS_ENABLED","sierra_tests"),
+                self.define_from_variant("OPTIMISM_TESTS_ENABLED","optimism"),
+                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","build_with_sanitizers")
+                self.define_from_variant("EXPY","expy"),
+                self.define_from_variant("PLATO_ENABLE_SERVICES_PYTHON","expy"),
+                self.define_from_variant("REGRESSION","regression"),
+                self.define_from_variant("SEACAS","regression"),
 
-        if '+platomain' in spec:
-          options.extend([ '-DPLATOMAIN=ON' ])
-
-        if '+platoproxy' in spec:
-          options.extend([ '-DPLATOPROXY=ON' ])
-
-        if '+python_app' in spec:
-          options.extend([ '-DPYTHON_INTERPRETER_APP=ON' ])
-
-        if '+platostatics' in spec:
-          options.extend([ '-DPLATOSTATICS=ON' ])
-
-        if '+expy' in spec:
-          options.extend([ '-DEXPY=ON' ])
-          options.extend([ '-DPLATO_ENABLE_SERVICES_PYTHON=ON' ])
-
-        if '+regression' in spec:
-          options.extend([ '-DREGRESSION=ON' ])
-          options.extend([ '-DSEACAS=ON' ])
-
-        if '+unit_testing' in spec:
-          options.extend([ '-DUNIT_TESTING=ON' ])
-        else:
-          options.extend([ '-DUNIT_TESTING=OFF' ])
-
-        if '+iso' in spec:
-          options.extend([ '-DENABLE_ISO=ON' ])
-
-        if '+prune' in spec:
-          options.extend([ '-DENABLE_PRUNE=ON' ])
-
-        if '+stk' in spec:
-          options.extend([ '-DSTK_ENABLED=ON' ])
+            ]
+        )
 
         if '+esp' in spec:
-          options.extend([ '-DESP_ENABLED=ON' ])
+          options.extend(
+              [
+                self.define_from_variant("ESP_ENABLED","esp"),
+                '-DESP_LIB_DIR:PATH={0}'.format(esp_lib_dir),
+                '-DESP_INC_DIR:PATH={0}'.format(esp_inc_dir)   
+              ]
+            )
           esp_lib_dir = spec['esp'].prefix+'/lib'
           esp_inc_dir = spec['esp'].prefix+'/include'
-          options.extend([ '-DESP_LIB_DIR:PATH={0}'.format(esp_lib_dir) ])
-          options.extend([ '-DESP_INC_DIR:PATH={0}'.format(esp_inc_dir) ])
-
-        if '-stk' in spec:
-          options.extend([ '-DSTK_ENABLED=OFF' ])
-
-        if '+albany_tests' in spec:
-          options.extend([ '-DALBANY=ON' ])
-          options.extend([ '-DALBANY_BINARY=AlbanyMPMD' ])
-
-        if '+tpetra_tests' in spec:
-          options.extend([ '-DPLATO_TPETRA=ON' ])
 
         if '+dakota' in spec:
-          options.extend([ '-DDAKOTADRIVER=ON' ])
           boost_dir = spec['boost'].prefix
-          options.extend([ '-DBOOST_ROOT:FILEPATH={0}'.format(boost_dir) ])
-          options.extend([ '-DCMAKE_CXX_COMPILER_VERSION={0}'.format(spec.compiler.version)])
-
-        if '+services' in spec:
-          options.extend([ '-DENABLE_PLATO_SERVICES=ON' ])
-
-        if '+sierra_tests' in spec:
-          options.extend([ '-DSIERRA_TESTS_ENABLED=ON' ])
-
-        if '+optimism' in spec:
-          options.extend([ '-DOPTIMISM_TESTS_ENABLED=ON' ])
-
+          options.extend(
+              [
+                self.define_from_variant("DAKOTADRIVER","dakota"),
+                '-DBOOST_ROOT:FILEPATH={0}'.format(boost_dir),
+                '-DCMAKE_CXX_COMPILER_VERSION={0}'.format(spec.compiler.version)  
+              ]
+            )  
+          
         return options
 
 
