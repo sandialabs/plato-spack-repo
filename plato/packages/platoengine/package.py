@@ -109,6 +109,8 @@ class Platoengine(CMakePackage, CudaPackage):
         )
 
         if '+esp' in spec:
+          esp_lib_dir = spec['esp'].prefix+'/lib'
+          esp_inc_dir = spec['esp'].prefix+'/include'
           options.extend(
               [
                 self.define_from_variant("ESP_ENABLED","esp"),
@@ -116,9 +118,7 @@ class Platoengine(CMakePackage, CudaPackage):
                 '-DESP_INC_DIR:PATH={0}'.format(esp_inc_dir)   
               ]
             )
-          esp_lib_dir = spec['esp'].prefix+'/lib'
-          esp_inc_dir = spec['esp'].prefix+'/include'
-
+          
         if '+dakota' in spec:
           boost_dir = spec['boost'].prefix
           options.extend(
