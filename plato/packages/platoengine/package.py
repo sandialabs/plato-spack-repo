@@ -100,12 +100,11 @@ class Platoengine(CMakePackage, CudaPackage):
                 self.define_from_variant("ENABLE_PLATO_SERVICES","services"),
                 self.define_from_variant("SIERRA_TESTS_ENABLED","sierra_tests"),
                 self.define_from_variant("OPTIMISM_TESTS_ENABLED","optimism"),
-                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","build_with_sanitizers")
+                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","build_with_sanitizers"),
                 self.define_from_variant("EXPY","expy"),
                 self.define_from_variant("PLATO_ENABLE_SERVICES_PYTHON","expy"),
                 self.define_from_variant("REGRESSION","regression"),
-                self.define_from_variant("SEACAS","regression"),
-
+                self.define_from_variant("SEACAS","regression")
             ]
         )
 
