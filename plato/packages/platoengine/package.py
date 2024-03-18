@@ -70,6 +70,8 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+python', when='+python_app')
     depends_on( 'py-plato-optimism', when='+optimism')
 
+    keep_werror = "all"
+
     def cmake_args(self):
         spec = self.spec
 

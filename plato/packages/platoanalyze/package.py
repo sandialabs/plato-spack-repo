@@ -109,6 +109,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
     conflicts('+omega-h',   when='+enginemesh')
     conflicts('+unittests', when='~physics')
 
+    keep_werror = "all"
+    
     def cmake_args(self):
         spec = self.spec
         options = []
