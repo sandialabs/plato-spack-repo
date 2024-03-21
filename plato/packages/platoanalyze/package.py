@@ -53,6 +53,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
     variant( 'umfpack',    default=False,    description='Compile with UMFPACK'         )
     variant( 'epetra',     default=True,     description='Compile with Epetra'          )
+    variant( 'build_with_sanitizers',       default=False,   description='Build with sanitizer flags')
 
     variant( 'integration_tests', default=True, description='Compile with engine integration tests')
     variant( 'dakota_tests', default=False, description='Compile with Dakota integration tests')
@@ -108,6 +109,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
     conflicts('+omega-h',   when='+enginemesh')
     conflicts('+unittests', when='~physics')
 
+    keep_werror = "all"
+    
     def cmake_args(self):
         spec = self.spec
         options = []
@@ -116,6 +119,27 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         trilinos_dir = spec['trilinos'].prefix
         options.extend([ '-DTrilinos_PREFIX:PATH={0}'.format(trilinos_dir) ])
+
+        options.extend(
+            [
+                self.define_from_variant("PLATOANALYZE_ENABLE_PYTHON","python"),
+                self.define_from_variant("PLATOANALYZE_ENABLE_ENGINEMESH","enginemesh"),
+                self.define_from_variant("PLATOANALYZE_ENABLE_CUDA","cuda"),
+                self.define_from_variant("PLATOANALYZE_ENABLE_MESHMAP","meshmap"),
+                self.define_from_variant("PLATOANALYZE_ENABLE_TPETRA","tpetra"),
+                self.define_from_variant("PLATOANALYZE_ENABLE_TACHO","tacho"),
+                self.define_from_variant("PLATOANALYZE_ENABLE_EPETRA","epetra"),
+                self.define_from_variant("HELMHOLTZ","helmholtz"),
+                self.define_from_variant("PLATOANALYZE_UNIT_TEST","unittests"),
+                self.define_from_variant("PLATOANALYZE_INTEGRATION_TESTS","integration_tests"),
+                self.define_from_variant("PLATOANALYZE_DAKOTA_TESTS","dakota_tests"),
+                self.define_from_variant("PLATOANALYZE_SMOKE_TESTS","verificationtests"),
+                self.define_from_variant("HEX_ELEMENTS","hex_elements"),
+                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","build_with_sanitizers"),
+                self.define_from_variant("MICROMORPHIC","micromorphic"),
+                self.define_from_variant("ALL_PENALTY","all_penalty")
+            ]
+        )
 
         if '+mpmd' in spec:
           options.extend([ '-DPLATOANALYZE_ENABLE_MPMD=ON' ])
@@ -130,36 +154,13 @@ class Platoanalyze(CMakePackage, CudaPackage):
           omega_h_dir = spec['omega-h'].prefix
           options.extend([ '-DOMEGA_H_PREFIX:PATH={0}'.format(omega_h_dir) ])
 
-        if '+python' in spec:
-          options.extend([ '-DPLATOANALYZE_ENABLE_PYTHON=ON' ])
-
-        if '+enginemesh' in spec:
-          options.extend([ '-DPLATOANALYZE_ENABLE_ENGINEMESH=ON' ])
-        else:
-          options.extend([ '-DPLATOANALYZE_ENABLE_ENGINEMESH=OFF' ])
-
-        if '+cuda' in spec:
-          options.extend([ '-DPLATOANALYZE_ENABLE_CUDA=ON' ])
-
-        if '+meshmap' in spec:
-          options.extend([ '-DPLATOANALYZE_ENABLE_MESHMAP=ON' ])
-
-        if '+tpetra' in spec:
-          options.extend([ '-DPLATOANALYZE_ENABLE_TPETRA=ON' ])
-
-        if '+tacho' in spec:
-          options.extend([ '-DPLATOANALYZE_ENABLE_TACHO=ON' ])
-
         if '+umfpack' in spec:
           options.extend([ '-DPLATOANALYZE_ENABLE_UMFPACK=ON' ])
           umfpack_lib_dir = spec['suite-sparse'].prefix.lib
           umfpack_inc_dir = spec['suite-sparse'].prefix.include
           options.extend([ '-DUMFPACK_LIB_DIR:PATH={0}'.format(umfpack_lib_dir) ])
           options.extend([ '-DUMFPACK_INC_DIR:PATH={0}'.format(umfpack_inc_dir) ])
-
-        if '+epetra' in spec:
-          options.extend([ '-DPLATOANALYZE_ENABLE_EPETRA=ON' ])
-
+        
         if '+esp' in spec:
           options.extend([ '-DPLATOANALYZE_ENABLE_ESP=ON' ])
           esp_lib_dir = spec['esp'].prefix+'/lib'
@@ -179,23 +180,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
           options.extend([ '-DSTABILIZED=OFF' ])
           options.extend([ '-DPLASTICITY=OFF' ])
 
-        if '+helmholtz' in spec:
-          options.extend([ '-DHELMHOLTZ=ON' ])
-
-        if '~helmholtz' in spec:
-          options.extend([ '-DHELMHOLTZ=OFF' ])
-
-        if '~unittests' in spec:
-          options.extend([ '-DPLATOANALYZE_UNIT_TEST=OFF' ])
-
-        if '+integration_tests' in spec:
-          options.extend([ '-DPLATOANALYZE_INTEGRATION_TESTS=ON' ])
-
-        if '+dakota_tests' in spec:
-          options.extend([ '-DPLATOANALYZE_DAKOTA_TESTS=ON' ])
-
         if '+services' in spec['platoengine']:
-            options.extend(['-DPLATOANALYZE_PE_SERVICES=ON'])
+          options.extend(['-DPLATOANALYZE_PE_SERVICES=ON'])
 
         if '+stk' in spec['platoengine']:
           options.extend([ '-DPLATOANALYZE_STK_ENABLED=ON' ])
@@ -205,25 +191,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         if '+iso' in spec['platoengine']:
           options.extend([ '-DENABLE_ISO=ON' ])
-
-        if '+verificationtests' in spec:
-          options.extend(['-DPLATOANALYZE_SMOKE_TESTS=ON'])
-        elif '~verificationtests' in spec:
-          options.extend(['-DPLATOANALYZE_SMOKE_TESTS=OFF'])
-
-        if '+hex_elements' in spec:
-            options.extend(['-DHEX_ELEMENTS=ON'])
-        else:
-            options.extend(['-DHEX_ELEMENTS=OFF'])
-
-        if '+micromorphic' in spec:
-            options.extend(['-DMICROMORPHIC=ON'])
-        else:
-            options.extend(['-DMICROMORPHIC=OFF'])
-
-        if '+all_penalty' in spec:
-            options.extend(['-DALL_PENALTY=ON'])
-
+        
         return options
 
     def setup_run_environment(self, run_env):
