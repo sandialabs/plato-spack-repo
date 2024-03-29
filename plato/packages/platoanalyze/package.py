@@ -115,7 +115,10 @@ class Platoanalyze(CMakePackage, CudaPackage):
         spec = self.spec
         options = []
 
-        options.extend([ '-DBUILD_SHARED_LIBS:BOOL=ON' ])
+        options.extend([
+          self.define("CMAKE_EXPORT_COMPILE_COMMANDS", "ON"),
+          self.define("BUILD_SHARED_LIBS", "ON")
+        ])
 
         trilinos_dir = spec['trilinos'].prefix
         options.extend([ '-DTrilinos_PREFIX:PATH={0}'.format(trilinos_dir) ])

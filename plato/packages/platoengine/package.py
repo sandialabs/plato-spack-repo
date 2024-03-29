@@ -78,6 +78,7 @@ class Platoengine(CMakePackage, CudaPackage):
         options = []
         options.extend(
             [
+                self.define("CMAKE_EXPORT_COMPILE_COMMANDS", "ON"),
                 self.define("CMAKE_C_COMPILER", spec["mpi"].mpicc),
                 self.define("CMAKE_CXX_COMPILER", spec["mpi"].mpicxx),
                 self.define("CMAKE_Fortran_COMPILER", spec["mpi"].mpifc)
