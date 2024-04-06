@@ -16,7 +16,7 @@ class PyOptimism(Package):
 
     maintainers = ['ralberd']
 
-    version("0.0.1", branch='main')
+    version("0.0.1", commit="56b43b8716fc15df6edd97d5cc2842869d7c782c")
 
     depends_on("python", type=('build'))
     depends_on("py-pip")

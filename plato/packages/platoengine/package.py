@@ -63,7 +63,8 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'nlopt',                                         when='+expy'         )
     # py-setuptools later than v44.1.0 require python 3.x
     depends_on( 'py-numpy',      when='+expy'         )
-    depends_on( 'esp@BetaLin-2023-11-09', type=('build', 'link', 'run'), when='+esp')
+
+    depends_on( 'esp@124Lin', type=('build', 'link', 'run'), when='+esp')
     depends_on( 'dakota', when='+dakota')
     depends_on( 'numdiff', when='+regression')
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi')
