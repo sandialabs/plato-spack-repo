@@ -35,7 +35,7 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'services',       default=False,   description='Compile with services'           )
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
     variant( 'optimism',       default=False,   description='Enable OptimiSM and its Plato utilities')
-    variant( 'build_with_sanitizers',       default=False,   description='Build with sanitizer flags')
+    variant( 'dev_build',      default=False,   description='Build with dev features such as sanitizers and clang-tidy')
 
     conflicts( '+expy', when='-platomain')
     conflicts( '+iso',  when='-stk')
@@ -71,6 +71,8 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+python', when='+python_app')
     depends_on( 'py-plato-optimism', when='+optimism')
 
+    depends_on( 'llvm', when='+dev_build', type='build' )
+
     keep_werror = "all"
 
     def cmake_args(self):
@@ -104,11 +106,12 @@ class Platoengine(CMakePackage, CudaPackage):
                 self.define_from_variant("ENABLE_PLATO_SERVICES","services"),
                 self.define_from_variant("SIERRA_TESTS_ENABLED","sierra_tests"),
                 self.define_from_variant("OPTIMISM_TESTS_ENABLED","optimism"),
-                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","build_with_sanitizers"),
                 self.define_from_variant("EXPY","expy"),
                 self.define_from_variant("PLATO_ENABLE_SERVICES_PYTHON","expy"),
                 self.define_from_variant("REGRESSION","regression"),
-                self.define_from_variant("SEACAS","regression")
+                self.define_from_variant("SEACAS","regression"),
+                self.define_from_variant("BUILD_WITH_CLANG_TIDY","dev_build"),
+                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","dev_build")
             ]
         )
 

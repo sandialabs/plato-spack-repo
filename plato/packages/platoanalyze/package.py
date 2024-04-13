@@ -53,7 +53,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
     variant( 'umfpack',    default=False,    description='Compile with UMFPACK'         )
     variant( 'epetra',     default=True,     description='Compile with Epetra'          )
-    variant( 'build_with_sanitizers',       default=False,   description='Build with sanitizer flags')
+    variant( 'dev_build',  default=False,    description='Build with dev features such as sanitizers')
 
     variant( 'integration_tests', default=True, description='Compile with engine integration tests')
     variant( 'dakota_tests', default=False, description='Compile with Dakota integration tests')
@@ -138,9 +138,9 @@ class Platoanalyze(CMakePackage, CudaPackage):
                 self.define_from_variant("PLATOANALYZE_DAKOTA_TESTS","dakota_tests"),
                 self.define_from_variant("PLATOANALYZE_SMOKE_TESTS","verificationtests"),
                 self.define_from_variant("HEX_ELEMENTS","hex_elements"),
-                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","build_with_sanitizers"),
                 self.define_from_variant("MICROMORPHIC","micromorphic"),
-                self.define_from_variant("ALL_PENALTY","all_penalty")
+                self.define_from_variant("ALL_PENALTY","all_penalty"),
+                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","dev_build")
             ]
         )
 
