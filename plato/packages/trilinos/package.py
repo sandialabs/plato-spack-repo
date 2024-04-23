@@ -42,6 +42,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     version("master", branch="master")
     version("develop", branch="develop")
+    version("15.1.1", sha256="2108d633d2208ed261d09b2d6b2fbae7a9cdc455dd963c9c94412d38d8aaefe4")
     version("15.1.0", sha256="91940c8677b03ec06b3368f7ff8b835ba94dfa6551c6fb168faf10195f32b421")
     version("15.0.0", sha256="5651f1f967217a807f2c418a73b7e649532824dbf2742fa517951d6cc11518fb")
     version("14.4.0", sha256="8e7d881cf6677aa062f7bfea8baa1e52e8956aa575d6a4f90f2b6f032632d4c6")
@@ -162,6 +163,8 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     variant('pamgen', default=False, description='Compile with Pamgen') # Added by Plato
     variant("pardiso", default=False, description="Compile with support for pardiso-mkl solver") # Added by Plato
     variant('percept', default=False, description='Compile with percept') # Added by Plato
+    variant('krino', default=False, description='Compile with krino') # Added by Plato
+    variant('stkbalance', default=False, description='Compile with krino') # Added by Plato
     variant('tacho', default=False, description='Compile with Tacho') # Added by Plato
     variant('teuchos', default=True, description='Compile with Teuchos') # Added by Plato
 
@@ -722,6 +725,8 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
                 # Defines added by Plato
                 define_trilinos_enable('KokkosKernels'), # added by Plato
                 define_trilinos_enable('Percept'), # added by Plato
+                define_trilinos_enable('Krino'), # added by Plato
+                define_trilinos_enable('STKBalance'), # added by Plato
                 define_trilinos_enable('Teuchos'), # added by Plato
                 define_tpl_enable('Cholmod', False), # added by Plato
                 define_trilinos_enable('ShyLU_NodeTacho', 'tacho'), # added by Plato
