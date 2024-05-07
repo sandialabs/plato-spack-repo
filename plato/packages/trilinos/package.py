@@ -426,8 +426,9 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     #
     depends_on("cgns", when="+exodus")
+    depends_on("hdf5@:1.14.2", when="+exodus") # hdf5 dependency and version range added by Plato, 1.14.3 results in FPE
     depends_on("cmake@3.23:", type="build", when="@14.0.0:")
-    depends_on("hdf5+hl", when="+hdf5")
+    depends_on("hdf5@:1.14.2+hl", when="+hdf5") # Version range added by Plato, 1.14.3 results in FPE
     for plat in ["cray", "darwin", "linux"]:
         depends_on("hypre~internal-superlu~int64", when="+hypre platform=%s" % plat)
     depends_on("hypre-cmake~int64", when="+hypre platform=windows")
