@@ -149,3 +149,11 @@ class Platoengine(CMakePackage, CudaPackage):
         run_env.prepend_path('LD_LIBRARY_PATH', self.spec['mpi'].prefix.lib)
 
         run_env.prepend_path('PATH', self.prefix.etc)
+
+    def setup_build_environment(self, env):
+        if '+cuda' in self.spec:
+            # Overwrite mpi compiler env vars with nvcc_wrapper
+            env.set("OMPI_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
+            env.set("MPICH_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
+            env.set("MPICXX_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
+
