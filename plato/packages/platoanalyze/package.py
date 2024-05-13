@@ -117,6 +117,9 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         options.extend([
           self.define("CMAKE_EXPORT_COMPILE_COMMANDS", "ON"),
+          self.define("CMAKE_C_COMPILER", spec["mpi"].mpicc),
+          self.define("CMAKE_CXX_COMPILER", spec["mpi"].mpicxx),
+          self.define("CMAKE_Fortran_COMPILER", spec["mpi"].mpifc),
           self.define("BUILD_SHARED_LIBS", "ON")
         ])
 
@@ -201,3 +204,10 @@ class Platoanalyze(CMakePackage, CudaPackage):
         run_env.prepend_path('LD_LIBRARY_PATH', self.spec['platoanalyze'].prefix.lib)
         if '+python' in self.spec:
           run_env.prepend_path('PYTHONPATH', self.prefix.lib)
+
+    def setup_build_environment(self, env):
+        if '+cuda' in self.spec:
+            # Overwrite mpi compiler env vars with nvcc_wrapper
+            env.set("OMPI_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
+            env.set("MPICH_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
+            env.set("MPICXX_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
