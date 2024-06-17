@@ -164,7 +164,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     variant("pardiso", default=False, description="Compile with support for pardiso-mkl solver") # Added by Plato
     variant('percept', default=False, description='Compile with percept') # Added by Plato
     variant('krino', default=False, description='Compile with krino') # Added by Plato
-    variant('stkbalance', default=False, description='Compile with krino') # Added by Plato
+    variant('stkbalance', default=False, description='Compile with stkbalance') # Added by Plato
     variant('tacho', default=False, description='Compile with Tacho') # Added by Plato
     variant('teuchos', default=True, description='Compile with Teuchos') # Added by Plato
 
