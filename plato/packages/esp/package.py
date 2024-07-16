@@ -6,7 +6,7 @@ class Esp(Package):
 
     homepage = "https://acdl.mit.edu/ESP/"
 
-    version('124Lin', sha256='44b5df419195d310546050481e6c929d42135e61e6254f453a8feda1ef44008e', url='https://acdl.mit.edu/ESP/PreBuilts/ESP124-linux-x86_64.tgz')
+    version('124Lin', sha256='44b5df419195d310546050481e6c929d42135e61e6254f453a8feda1ef44008e', url='https://acdl.mit.edu/ESP/archive/ESP124-linux-x86_64.tgz')
     version('BetaLin-2023-11-09', sha256='a63df74f90c926c6ca127cb8e973a61502739b94bb7c0d2579668a888c050c94', url='https://acdl.mit.edu/ESP/archive/ESPbeta-linux-x86_64_2023-11-13.tgz')
     version('BetaLin-2023-10-11', sha256='5798cdc86712e6ae131d72077a12a4612a5bf74a6f73b82797baf2293fd85493', url='https://acdl.mit.edu/ESP/archive/ESPbeta-linux-x86_64_2023-10-11.tgz')
     version('BetaLin-2023-07-17', sha256='483edb0d48e3be659bfa927e6424eb7c0502fd1b7ad6cefaeee69a65808dc048', url='https://acdl.mit.edu/ESP/archive/ESPbeta-linux-x86_64_2023-07-17.tgz')
