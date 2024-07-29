@@ -19,7 +19,8 @@ class PyPlatoOptimism(Package):
 
     depends_on("python", type=('build'))
     depends_on("py-pip")
-    depends_on("py-optimism", type=("build", "run"))
+    depends_on("py-numpy")
+    depends_on("py-optimism", type=('build', 'run'))
 
     def install(self, spec, prefix):
         os.system("cp -r ./plato_optimism " + spec['py-plato-optimism'].prefix)
@@ -30,5 +31,12 @@ class PyPlatoOptimism(Package):
         build_env.prepend_path('PYTHONPATH', self.spec['py-pip'].prefix.lib)
 
     def setup_run_environment(self, run_env):
+        python_version = self.spec['python'].version.up_to(2)
+        numpy_site_packages = os.path.join(
+            self.spec['py-numpy'].prefix.lib,
+            'python{0}'.format(python_version),
+            'site-packages'
+        )
         run_env.prepend_path('PYTHONPATH', self.prefix)
         run_env.prepend_path('PYTHONPATH', self.prefix.lib)
+        run_env.prepend_path('PYTHONPATH', numpy_site_packages)

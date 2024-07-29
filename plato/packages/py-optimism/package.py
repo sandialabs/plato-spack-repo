@@ -20,6 +20,7 @@ class PyOptimism(Package):
 
     depends_on("python", type=('build'))
     depends_on("py-pip")
+    depends_on("py-numpy")
     depends_on("suite-sparse")
 
     def install(self, spec, prefix):
