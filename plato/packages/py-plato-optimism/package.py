@@ -19,7 +19,7 @@ class PyPlatoOptimism(Package):
 
     depends_on("python", type=('build'))
     depends_on("py-pip")
-    depends_on("py-numpy")
+    depends_on("py-numpy", type=('build', 'run'))
     depends_on("py-optimism", type=('build', 'run'))
 
     def install(self, spec, prefix):
