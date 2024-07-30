@@ -16,7 +16,7 @@ class PyOptimism(Package):
 
     maintainers = ['ralberd']
 
-    version("0.0.1", commit="56b43b8716fc15df6edd97d5cc2842869d7c782c")
+    version("0.0.1", commit="6cf494196656b1d6a812c07fc4bbf3c6412d452a")
 
     depends_on("python", type=('build'))
     depends_on("py-pip")
@@ -35,6 +35,14 @@ class PyOptimism(Package):
         build_env.set("SUITESPARSE_LIBRARY_DIR", self.spec['suite-sparse'].prefix.lib)
 
     def setup_run_environment(self, run_env):
+        python_version = self.spec['python'].version.up_to(2)
+        numpy_site_packages = os.path.join(
+            self.spec['py-numpy'].prefix.lib,
+            'python{0}'.format(python_version),
+            'site-packages'
+        )
+
         run_env.prepend_path('PYTHONPATH', self.prefix)
         run_env.prepend_path('PYTHONPATH', self.prefix.lib)
+        run_env.prepend_path('PYTHONPATH', numpy_site_packages)
         run_env.prepend_path('LD_LIBRARY_PATH', self.spec['suite-sparse'].prefix.lib)
