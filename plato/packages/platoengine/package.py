@@ -54,8 +54,7 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'mpi',            type=('build','link','run'))
     depends_on( 'cmake@3.0.0:',   type='build')
  
-    depends_on( 'trilinos@master+exodus+chaco+intrepid+shards+rol gotype=int cxxstd=17')
-    depends_on( 'trilinos@15.1.0+exodus+chaco+intrepid+shards+rol+tpetra gotype=int cxxstd=17')
+    depends_on( 'trilinos@16.0.0+exodus+chaco+intrepid+shards+rol+tpetra gotype=int cxxstd=17')
     depends_on( 'trilinos+boost+stk', when='+stk')
     depends_on( 'trilinos+percept+zoltan+boost+stk', when='+prune')
     depends_on( 'trilinos+cuda+wrapper', when='+cuda')
@@ -72,7 +71,7 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'numdiff', when='+regression')
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi')
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+python', when='+python_app')
-    depends_on( 'py-plato-optimism', when='+optimism')
+    depends_on( 'py-optimism', when='+optimism')
 
     depends_on( 'llvm', when='+dev_build', type='build' )
 
