@@ -36,7 +36,8 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
     variant( 'optimism',       default=False,   description='Enable OptimiSM and its Plato utilities')
     variant( 'dev_build',      default=False,   description='Build with dev features such as sanitizers and clang-tidy')
-
+    variant( 'snopt',          default=False,   description='Build with SNOPT'                )
+    
     conflicts( '+expy', when='-platomain')
     conflicts( '+iso',  when='-stk')
     conflicts( '+prune',  when='-stk')
@@ -71,6 +72,8 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+python', when='+python_app')
     depends_on( 'py-optimism', when='+optimism')
 
+    depends_on( 'snopt', when='+snopt')
+    
     depends_on( 'llvm', when='+dev_build', type='build' )
 
     keep_werror = "all"
@@ -125,7 +128,17 @@ class Platoengine(CMakePackage, CudaPackage):
                 '-DESP_INC_DIR:PATH={0}'.format(esp_inc_dir)   
               ]
             )
-          
+        if '+snopt' in spec:
+          snopt_lib_dir = spec['snopt'].prefix+'/lib'
+          snopt_inc_dir = spec['snopt'].prefix+'/include'
+          options.extend(
+              [
+                  self.define_from_variant("SNOPT_ENABLED","snopt"),
+                  '-DSNOPT_LIB_DIR:PATH={0}'.format(snopt_lib_dir),
+                  '-DSNOPT_INC_DIR:PATH={0}'.format(snopt_inc_dir)
+              ]
+            )
+
         if '+dakota' in spec:
           boost_dir = spec['boost'].prefix
           options.extend(
