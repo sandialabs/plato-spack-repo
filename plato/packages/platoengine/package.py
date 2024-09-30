@@ -19,7 +19,6 @@ class Platoengine(CMakePackage, CudaPackage):
     version('release-v0.1.0', branch='release-v0.1.0')
 
     variant( 'platomain',      default=True,    description='Compile PlatoMain'               )
-    variant( 'platostatics',   default=True,    description='Compile PlatoStatics'            )
     variant( 'regression',     default=True,    description='Add regression tests'            )
     variant( 'unit_testing',   default=True,    description='Add unit testing'                )
     variant( 'albany_tests',   default=False,   description='Configure Albany tests'          )
@@ -100,7 +99,6 @@ class Platoengine(CMakePackage, CudaPackage):
                 self.define_from_variant("PLATOMAIN","platomain"),
                 self.define_from_variant("PLATOPROXY","platoproxy"),
                 self.define_from_variant("PYTHON_INTERPRETER_APP","python_app"),
-                self.define_from_variant("PLATOSTATICS","platostatics"),
                 self.define_from_variant("UNIT_TESTING","unit_testing"),
                 self.define_from_variant("ENABLE_ISO","iso"),
                 self.define_from_variant("ENABLE_PRUNE","prune"),
