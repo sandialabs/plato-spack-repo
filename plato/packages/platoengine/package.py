@@ -26,7 +26,6 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'esp',            default=False,   description='Turn on esp'                     )
     variant( 'expy',           default=False,   description='Compile exodus/python API'       )
     variant( 'iso',            default=False,   description='Turn on iso extraction'          )
-    variant( 'krino',          default=False,   description='Turn on krino'                   )
     variant( 'platoproxy',     default=False,   description='Compile PlatoProxy'              )
     variant( 'python_app',     default=False,   description='Compile PythonInterpreter app'   )
     variant( 'prune',          default=False,   description='Turn on use of prune and refine' )
@@ -60,7 +59,6 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'trilinos+percept+zoltan+boost+stk', when='+prune')
     depends_on( 'trilinos+cuda+wrapper', when='+cuda')
     depends_on( 'trilinos~cuda', when='+dakota')
-    depends_on( 'trilinos+krino+intrepid2+stkbalance+zoltan2', when='+krino')
     depends_on( 'googletest',                                      when='+unit_testing' )
     depends_on( 'python@3.8:',    type=('build', 'link', 'run'), when='+expy'    )
     depends_on( 'nlopt',                                         when='+expy'         )
@@ -150,13 +148,6 @@ class Platoengine(CMakePackage, CudaPackage):
                 '-DCMAKE_CXX_COMPILER_VERSION={0}'.format(spec.compiler.version)  
               ]
             )  
-          
-        if '+krino' in spec:
-          options.extend(
-              [
-                self.define_from_variant("KRINO_ENABLED","krino")
-              ]
-            )
 
         return options
 
