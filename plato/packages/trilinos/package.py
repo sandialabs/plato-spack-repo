@@ -131,7 +131,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     variant("ifpack", default=True, description="Compile with Ifpack")
     variant("ifpack2", default=True, description="Compile with Ifpack2")
     variant("intrepid", default=False, description="Enable Intrepid")
-    variant("intrepid2", default=True, description="Enable Intrepid2")
+    variant("intrepid2", default=False, description="Enable Intrepid2")
     variant("isorropia", default=False, description="Compile with Isorropia")
     variant("gtest", default=False, description="Build vendored Googletest")
     variant("kokkos", default=True, description="Compile with Kokkos")
@@ -157,7 +157,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     variant("tpetra", default=True, description="Compile with Tpetra")
     variant("trilinoscouplings", default=False, description="Compile with TrilinosCouplings")
     variant("zoltan", default=False, description="Compile with Zoltan")
-    variant("zoltan2", default=True, description="Compile with Zoltan2")
+    variant("zoltan2", default=False, description="Compile with Zoltan2")
 
     # Variants needed for Plato
     variant('kokkoskernels', default=True, description='Compile with KokkosKernels') # Added by Plato
@@ -165,7 +165,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     variant("pardiso", default=False, description="Compile with support for pardiso-mkl solver") # Added by Plato
     variant('percept', default=False, description='Compile with percept') # Added by Plato
     variant('krino', default=True, description='Compile with krino') # Added by Plato
-    variant('stkbalance', default=True, description='Compile with stkbalance') # Added by Plato
+    variant('stkbalance', default=False, description='Compile with stkbalance') # Added by Plato
     variant('tacho', default=False, description='Compile with Tacho') # Added by Plato
     variant('teuchos', default=True, description='Compile with Teuchos') # Added by Plato
 
@@ -460,6 +460,9 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("superlu@4.3 +pic", when="+superlu")
     depends_on("swig", when="+python")
     depends_on("zlib-api", when="+zoltan")
+
+    # Dependencies for Krino
+    requires("+stkbalance+intrepid2+zoltan2", when="+krino") # Added by Plato
 
     # Trilinos' Tribits config system is limited which makes it very tricky to
     # link Amesos with static MUMPS, see
