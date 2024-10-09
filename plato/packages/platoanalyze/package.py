@@ -52,7 +52,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'tpetra',     default=False,    description='Compile with Tpetra'          )
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
     variant( 'umfpack',    default=False,    description='Compile with UMFPACK'         )
-    variant( 'epetra',     default=True,     description='Compile with Epetra'          )
     variant( 'dev_build',  default=False,    description='Build with dev features such as sanitizers')
 
     variant( 'integration_tests', default=True, description='Compile with engine integration tests')
@@ -70,7 +69,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('suite-sparse', when='+umfpack')
     depends_on('trilinos+tpetra+belos+ifpack2+amesos2+muelu+zoltan2',             when='+tpetra')
     depends_on('trilinos~tpetra~amesos2~ifpack2~belos~muelu~zoltan2',             when='~tpetra')
-    depends_on('trilinos~epetra',                                                 when='~epetra')
 
     depends_on('kokkos-nvcc-wrapper@4.0.01', when='+cuda')
 
@@ -104,7 +102,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('omega-h@develop_bb6b', type=('build', 'link', 'run'), when='+omega-h')
     depends_on('omega-h+cuda',                              when='+cuda+omega-h')
 
-    conflicts('~epetra',    when='~tpetra')
     conflicts('~omega-h',   when='~enginemesh')
     conflicts('+omega-h',   when='+enginemesh')
     conflicts('+unittests', when='~physics')
@@ -134,7 +131,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
                 self.define_from_variant("PLATOANALYZE_ENABLE_MESHMAP","meshmap"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_TPETRA","tpetra"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_TACHO","tacho"),
-                self.define_from_variant("PLATOANALYZE_ENABLE_EPETRA","epetra"),
                 self.define_from_variant("HELMHOLTZ","helmholtz"),
                 self.define_from_variant("PLATOANALYZE_UNIT_TEST","unittests"),
                 self.define_from_variant("PLATOANALYZE_INTEGRATION_TESTS","integration_tests"),
