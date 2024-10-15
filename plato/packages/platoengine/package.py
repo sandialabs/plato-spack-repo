@@ -146,7 +146,7 @@ class Platoengine(CMakePackage, CudaPackage):
                 '-DCMAKE_CXX_COMPILER_VERSION={0}'.format(spec.compiler.version)  
               ]
             )  
-          
+
         return options
 
 

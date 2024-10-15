@@ -164,6 +164,8 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     variant('pamgen', default=False, description='Compile with Pamgen') # Added by Plato
     variant("pardiso", default=False, description="Compile with support for pardiso-mkl solver") # Added by Plato
     variant('percept', default=False, description='Compile with percept') # Added by Plato
+    variant('krino', default=True, description='Compile with krino') # Added by Plato
+    variant('stkbalance', default=False, description='Compile with stkbalance') # Added by Plato
     variant('tacho', default=False, description='Compile with Tacho') # Added by Plato
     variant('teuchos', default=True, description='Compile with Teuchos') # Added by Plato
 
@@ -459,6 +461,9 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("swig", when="+python")
     depends_on("zlib-api", when="+zoltan")
 
+    # Dependencies for Krino
+    requires("+stkbalance+intrepid2+zoltan2", when="+krino") # Added by Plato
+
     # Trilinos' Tribits config system is limited which makes it very tricky to
     # link Amesos with static MUMPS, see
     # https://trilinos.org/docs/dev/packages/amesos2/doc/html/classAmesos2_1_1MUMPS.html
@@ -725,6 +730,8 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
                 # Defines added by Plato
                 define_trilinos_enable('KokkosKernels'), # added by Plato
                 define_trilinos_enable('Percept'), # added by Plato
+                define_trilinos_enable('Krino'), # added by Plato
+                define_trilinos_enable('STKBalance'), # added by Plato
                 define_trilinos_enable('Teuchos'), # added by Plato
                 define_tpl_enable('Cholmod', False), # added by Plato
                 define_trilinos_enable('ShyLU_NodeTacho', 'tacho'), # added by Plato
