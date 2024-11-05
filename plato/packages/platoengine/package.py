@@ -147,6 +147,11 @@ class Platoengine(CMakePackage, CudaPackage):
               ]
             )  
 
+        if '+expy' in self.spec or '+python_app' in self.spec:
+          options.extend(
+             ['-DPython3_EXECUTABLE={0}/python3'.format(self.spec['python'].prefix.bin)]
+          )
+
         return options
 
 
