@@ -26,16 +26,15 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'expy',           default=False,   description='Compile exodus/python API'       )
     variant( 'iso',            default=False,   description='Turn on iso extraction'          )
     variant( 'platoproxy',     default=False,   description='Compile PlatoProxy'              )
-    variant( 'python_app',     default=False,   description='Compile PythonInterpreter app'   )
     variant( 'prune',          default=False,   description='Turn on use of prune and refine' )
     variant( 'stk',            default=False,   description='Turn on use of stk'              )
     variant( 'tpetra_tests',   default=False,   description='Configure Tpetra tests'          )
     variant( 'dakota',         default=False,   description='Compile with Dakota'             )
     variant( 'services',       default=False,   description='Compile with services'           )
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
-    variant( 'optimism',       default=False,   description='Enable OptimiSM and its Plato utilities')
     variant( 'dev_build',      default=False,   description='Build with dev features such as sanitizers and clang-tidy')
     variant( 'snopt',          default=False,   description='Build with SNOPT'                )
+    variant( 'python',         default=False,   description='Build and link with python. This option is needed for plugins that depend on python')
     
     conflicts( '+expy', when='-platomain')
     conflicts( '+iso',  when='-stk')
@@ -48,17 +47,18 @@ class Platoengine(CMakePackage, CudaPackage):
     conflicts( '@0.6.0', when='+prune')
     conflicts( '+expy', when='+dakota')
     conflicts( '~services', when='+dakota')
-    conflicts( '+optimism', when='~python_app')
 
     depends_on( 'mpi',            type=('build','link','run'))
     depends_on( 'cmake@3.0.0:',   type='build')
  
-    depends_on( 'trilinos@16_0_0_stk_ub_fix+exodus+chaco+intrepid+shards+rol+tpetra gotype=int cxxstd=17')
-    depends_on( 'trilinos+boost+stk', when='+stk')
-    depends_on( 'trilinos+percept+zoltan+boost+stk', when='+prune')
-    depends_on( 'trilinos+cuda+wrapper', when='+cuda')
-    depends_on( 'trilinos~cuda', when='+dakota')
-    depends_on( 'googletest',                                      when='+unit_testing' )
+    trilinos_base_spec = 'trilinos@16_0_0_stk_ub_fix+exodus+chaco+intrepid+shards+rol+tpetra~mumps'
+    trilinos_base_add_ons = ' gotype=int cxxstd=17'
+    depends_on( trilinos_base_spec + trilinos_base_add_ons)
+    depends_on( trilinos_base_spec + '+boost+krino+stk' + trilinos_base_add_ons, when='+stk')
+    depends_on( trilinos_base_spec + '+percept+zoltan+boost+stk' + trilinos_base_add_ons, when='+prune')
+    depends_on( trilinos_base_spec + '+cuda+wrapper' + trilinos_base_add_ons, when='+cuda')
+    depends_on( trilinos_base_spec + '~cuda~krino~stk' + trilinos_base_add_ons, when='+dakota')
+    depends_on( 'googletest',                                    when='+unit_testing' )
     depends_on( 'python@3.8:',    type=('build', 'link', 'run'), when='+expy'    )
     depends_on( 'nlopt',                                         when='+expy'         )
     # py-setuptools later than v44.1.0 require python 3.x
@@ -68,10 +68,10 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'dakota', when='+dakota')
     depends_on( 'numdiff', when='+regression')
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi')
-    depends_on( 'py-pybind11', when='+python_app')
-    depends_on( 'py-optimism', when='+optimism')
 
     depends_on( 'snopt', when='+snopt')
+
+    depends_on('python@3.8:', when='+python')
     
     depends_on( 'llvm', when='+dev_build', type='build' )
 
@@ -98,7 +98,6 @@ class Platoengine(CMakePackage, CudaPackage):
                 self.define_from_variant("PLATOENGINE_ENABLE_CUDA","cuda"),
                 self.define_from_variant("PLATOMAIN","platomain"),
                 self.define_from_variant("PLATOPROXY","platoproxy"),
-                self.define_from_variant("PYTHON_INTERPRETER_APP","python_app"),
                 self.define_from_variant("UNIT_TESTING","unit_testing"),
                 self.define_from_variant("ENABLE_ISO","iso"),
                 self.define_from_variant("ENABLE_PRUNE","prune"),
@@ -106,13 +105,13 @@ class Platoengine(CMakePackage, CudaPackage):
                 self.define_from_variant("PLATO_TPETRA","tpetra_tests"),
                 self.define_from_variant("ENABLE_PLATO_SERVICES","services"),
                 self.define_from_variant("SIERRA_TESTS_ENABLED","sierra_tests"),
-                self.define_from_variant("OPTIMISM_TESTS_ENABLED","optimism"),
                 self.define_from_variant("EXPY","expy"),
                 self.define_from_variant("PLATO_ENABLE_SERVICES_PYTHON","expy"),
                 self.define_from_variant("REGRESSION","regression"),
                 self.define_from_variant("SEACAS","regression"),
                 self.define_from_variant("BUILD_WITH_CLANG_TIDY","dev_build"),
-                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","dev_build")
+                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","dev_build"),
+                self.define_from_variant("LINK_WITH_PYTHON","python")
             ]
         )
 
@@ -147,7 +146,7 @@ class Platoengine(CMakePackage, CudaPackage):
               ]
             )  
 
-        if '+expy' in self.spec or '+python_app' in self.spec:
+        if '+expy' in self.spec or '+python' in self.spec:
           options.extend(
              ['-DPython3_EXECUTABLE={0}/python3'.format(self.spec['python'].prefix.bin)]
           )
