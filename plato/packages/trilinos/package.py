@@ -404,6 +404,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     conflicts('+percept', when='~stk') # Added by Plato
     conflicts('+percept', when='~zoltan') # Added by Plato
     conflicts('+pamgen', when='%xl') # Added by Plato
+    conflicts('+krino', when='~stk') # Added by Plato
 
     # ###################### Dependencies ##########################
 
@@ -462,7 +463,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("zlib-api", when="+zoltan")
 
     # Dependencies for Krino
-    requires("+stkbalance+intrepid2+zoltan2", when="+krino") # Added by Plato
+    requires("+stk+stkbalance+intrepid2+zoltan2", when="+krino") # Added by Plato
 
     # Trilinos' Tribits config system is limited which makes it very tricky to
     # link Amesos with static MUMPS, see
