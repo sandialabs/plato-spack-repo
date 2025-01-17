@@ -41,7 +41,7 @@ class Amgx(CMakePackage, CudaPackage):
     depends_on("mkl", when="+mkl")
     depends_on("magma", when="+magma")
 
-    depends_on("cuda@:11.8.89", when="@:2.3.0+cuda")
+    depends_on("cuda@:11.8.89", when="@:2.3.0+cuda") # Added by Plato, amgx 0.2.2 did not build with cuda 12
 
     def cmake_args(self):
         args = []
