@@ -13,7 +13,6 @@ trigger-super:
     PARENT_SOURCE: ${CI_PIPELINE_SOURCE}
   trigger:
     project: 1540-compsim/plato/plato
-    branch: wildman/update-spack
     strategy: depend
   needs: []
 
