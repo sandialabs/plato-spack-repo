@@ -1,4 +1,4 @@
-# Copyright 2013-2019 Lawrence Livermore National Security, LLC and other
+# Copyright 2012-2019 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -10,8 +10,8 @@ class Platoengine(CMakePackage, CudaPackage):
     """Plato Engine - Platform for Topology Optimization"""
     
     homepage = "https://www.sandia.gov/plato3d/"
-    url      = "https://github.com/platoengine/platoengine/archive/v0.6.0.tar.gz"
-    git      = "https://github.com/platoengine/platoengine.git"
+    url      = "https://github.com/sandialabs/platoengine.git"
+    git      = "https://github.com/sandialabs/platoengine.git"
 
     maintainers = ['rviertel', 'jrobbin']
 
@@ -21,20 +21,19 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'platomain',      default=True,    description='Compile PlatoMain'               )
     variant( 'regression',     default=True,    description='Add regression tests'            )
     variant( 'unit_testing',   default=True,    description='Add unit testing'                )
-    variant( 'albany_tests',   default=False,   description='Configure Albany tests'          )
     variant( 'esp',            default=False,   description='Turn on esp'                     )
     variant( 'expy',           default=False,   description='Compile exodus/python API'       )
     variant( 'iso',            default=False,   description='Turn on iso extraction'          )
     variant( 'platoproxy',     default=False,   description='Compile PlatoProxy'              )
     variant( 'prune',          default=False,   description='Turn on use of prune and refine' )
     variant( 'stk',            default=False,   description='Turn on use of stk'              )
-    variant( 'tpetra_tests',   default=False,   description='Configure Tpetra tests'          )
     variant( 'dakota',         default=False,   description='Compile with Dakota'             )
     variant( 'services',       default=False,   description='Compile with services'           )
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
     variant( 'dev_build',      default=False,   description='Build with dev features such as sanitizers and clang-tidy')
     variant( 'snopt',          default=False,   description='Build with SNOPT'                )
     variant( 'python',         default=False,   description='Build and link with python. This option is needed for plugins that depend on python')
+    variant( 'legacy',         default=True,    description='Build the original platoengine')
     
     conflicts( '+expy', when='-platomain')
     conflicts( '+iso',  when='-stk')
@@ -47,6 +46,16 @@ class Platoengine(CMakePackage, CudaPackage):
     conflicts( '@0.6.0', when='+prune')
     conflicts( '+expy', when='+dakota')
     conflicts( '~services', when='+dakota')
+    conflicts('~legacy', when='+prune', msg='prune requires legacy to be enabled')
+    conflicts('~legacy', when='+iso', msg='iso requires legacy to be enabled')
+    conflicts('~legacy', when='+platomain', msg='platomain requires legacy to be enabled')
+    conflicts('~legacy', when='+dakota', msg='dakota requires legacy to be enabled')
+    conflicts('~legacy', when='+services', msg='sevices requires legacy to be enabled')
+    conflicts('~legacy', when='+esp', msg='esp requires legacy to be enabled')
+    conflicts('~legacy', when='+expy', msg='expy requires legacy to be enabled')
+    conflicts('~legacy', when='+prune', msg='prune requires legacy to be enabled')
+    conflicts('~legacy', when='+platoproxy', msg='platoproxy requires legacy to be enabled')
+    conflicts('~stk', when='~legacy', msg='Stk is required to build new platoengine')
 
     depends_on( 'mpi',            type=('build','link','run'))
     depends_on( 'cmake@3.0.0:',   type='build')
@@ -102,7 +111,6 @@ class Platoengine(CMakePackage, CudaPackage):
                 self.define_from_variant("ENABLE_ISO","iso"),
                 self.define_from_variant("ENABLE_PRUNE","prune"),
                 self.define_from_variant("STK_ENABLED","stk"),
-                self.define_from_variant("PLATO_TPETRA","tpetra_tests"),
                 self.define_from_variant("ENABLE_PLATO_SERVICES","services"),
                 self.define_from_variant("SIERRA_TESTS_ENABLED","sierra_tests"),
                 self.define_from_variant("EXPY","expy"),
@@ -111,7 +119,8 @@ class Platoengine(CMakePackage, CudaPackage):
                 self.define_from_variant("SEACAS","regression"),
                 self.define_from_variant("BUILD_WITH_CLANG_TIDY","dev_build"),
                 self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","dev_build"),
-                self.define_from_variant("LINK_WITH_PYTHON","python")
+                self.define_from_variant("LINK_WITH_PYTHON","python"),
+                self.define_from_variant("LEGACY_BUILD","legacy")
             ]
         )
 
@@ -171,4 +180,3 @@ class Platoengine(CMakePackage, CudaPackage):
             env.set("OMPI_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
             env.set("MPICH_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
             env.set("MPICXX_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
-

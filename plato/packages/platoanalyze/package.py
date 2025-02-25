@@ -72,11 +72,13 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
     depends_on('kokkos-nvcc-wrapper@4.0.01', when='+cuda')
 
+    depends_on('platoengine+legacy')
     depends_on('platoengine~dakota',                                              when='+cuda+mpmd')
     depends_on('platoengine+dakota',                                              when='+dakota_tests')
 
     depends_on('cmake@3.0.0:', type='build')
     depends_on('python @3.8:',                               when='+python')
+    
     depends_on('platoengine+expy',                           when='+python')
     depends_on('platoengine+expy',                           when='+verificationtests')
 
@@ -142,6 +144,11 @@ class Platoanalyze(CMakePackage, CudaPackage):
                 self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","dev_build")
             ]
         )
+
+        if '+legacy' in self.spec['platoengine']:
+            options.append('-DLEGACY_BUILD=ON')
+        else:
+            options.append('-DLEGACY_BUILD=OFF')
 
         if '+mpmd' in spec:
           options.extend([ '-DPLATOANALYZE_ENABLE_MPMD=ON' ])
