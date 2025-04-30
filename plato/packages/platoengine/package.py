@@ -60,7 +60,7 @@ class Platoengine(CMakePackage, CudaPackage):
     depends_on( 'mpi',            type=('build','link','run'))
     depends_on( 'cmake@3.0.0:',   type='build')
  
-    trilinos_base_spec = 'trilinos@16_0_0_stk_ub_fix+exodus+chaco+intrepid+shards+rol+tpetra~mumps'
+    trilinos_base_spec = 'trilinos@16.1.0+exodus+chaco+intrepid+shards+rol+tpetra~mumps'
     trilinos_base_add_ons = ' gotype=int cxxstd=17'
     depends_on( trilinos_base_spec + trilinos_base_add_ons)
     depends_on( trilinos_base_spec + '+boost+krino+stk' + trilinos_base_add_ons, when='+stk')
