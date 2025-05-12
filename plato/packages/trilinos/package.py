@@ -498,6 +498,8 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     # ###################### Patches ##########################
 
+    patch("akri_tuple.patch", when="@16.1 +krino") # Added by Plato
+
     patch("shylu-node-optional.patch", when="@13:14.4.0 +shylu")
 
     patch("umfpack_from_suitesparse.patch", when="@11.14.1:12.8.1")

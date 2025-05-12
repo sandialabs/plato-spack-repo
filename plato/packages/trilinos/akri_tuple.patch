@@ -1,0 +1,12 @@
+diff --git a/packages/krino/krino/geometry/Akri_Triangle.hpp b/packages/krino/krino/geometry/Akri_Triangle.hpp
+index a40ba7902dd..077c4f6a28c 100644
+--- a/packages/krino/krino/geometry/Akri_Triangle.hpp
++++ b/packages/krino/krino/geometry/Akri_Triangle.hpp
+@@ -13,6 +13,7 @@
+ #include <assert.h>
+ #include <cmath>
+ #include <array>
++#include <tuple>
+ 
+ #include <stk_math/StkVector.hpp>
+ 
