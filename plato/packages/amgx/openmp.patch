@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7bc0f1b..919f58c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -277,7 +277,7 @@ add_library(amgx STATIC $<TARGET_OBJECTS:amgx_libs>)  # static lib
+ target_link_libraries(amgx amgx_libs)
+ 
+ add_library(amgxsh SHARED $<TARGET_OBJECTS:amgx_libs>)  # shared lib
+-target_link_libraries(amgxsh amgx_libs)
++target_link_libraries(amgxsh amgx_libs OpenMP::OpenMP_CXX)
+ 
+ set_target_properties(amgx PROPERTIES LINKER_LANGUAGE CUDA)
+ set_target_properties(amgxsh PROPERTIES LINKER_LANGUAGE CUDA)

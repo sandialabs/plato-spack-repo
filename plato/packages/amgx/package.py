@@ -18,11 +18,13 @@ class Amgx(CMakePackage, CudaPackage):
 
     homepage = "https://developer.nvidia.com/amgx"
     url = "https://github.com/nvidia/amgx/archive/v2.1.0.tar.gz"
+    git = "https://github.com/NVIDIA/AMGX.git"
 
     maintainers("js947")
 
     license("BSD-3-Clause")
 
+    version("2.4.0", tag="v2.4.0", submodules=True)
     version("2.3.0", sha256="419b3cd5bd3eb3469cbef79d64a8d19d5db88dd5cce809e49cac6fc4fc2edff1")
     version("2.2.0", sha256="dac78516bb528135cad903399fe0093aa0904e304565ef2d3da4fae05eda7928")
     version("2.1.0", sha256="6245112b768a1dc3486b2b3c049342e232eb6281a6021fffa8b20c11631f63cc")
@@ -41,7 +43,9 @@ class Amgx(CMakePackage, CudaPackage):
     depends_on("mkl", when="+mkl")
     depends_on("magma", when="+magma")
 
-    depends_on("cuda@:11.8.89", when="@:2.3.0+cuda") # Added by Plato, amgx 0.2.2 did not build with cuda 12
+    depends_on("cuda@:11.8.89", when="@:2.3.0+cuda") # Added by Plato, amgx 2.2.0 did not build with cuda 12
+
+    patch("openmp.patch", when="@2.4.0") # Added by Plato
 
     def cmake_args(self):
         args = []
