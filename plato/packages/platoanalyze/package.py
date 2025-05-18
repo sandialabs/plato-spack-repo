@@ -83,8 +83,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('platoengine+expy',                           when='+verificationtests')
 
     depends_on('arborx~mpi~cuda~serial @v1.1',              when='+meshmap')
-    depends_on('amgx@2.2',                                  when='+amgx')
-    depends_on('esp@124Lin', type=('build', 'link', 'run'),        when='+esp')
+    depends_on('amgx',                                      when='+amgx')
+    depends_on('esp@124Lin', type=('build', 'link', 'run'), when='+esp')
     depends_on('platoengine+esp',                           when='+esp')
     depends_on('numdiff',                                   when='+integration_tests')
     depends_on('py-numpy',                                  when='+dakota_tests')
