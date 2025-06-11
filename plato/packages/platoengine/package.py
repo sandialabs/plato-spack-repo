@@ -160,6 +160,10 @@ class Platoengine(CMakePackage, CudaPackage):
              ['-DPython3_EXECUTABLE={0}/python3'.format(self.spec['python'].prefix.bin)]
           )
 
+        gcc_toolchain_flag = list(filter(lambda flag: "gcc-toolchain" in flag, spec.compiler_flags["cxxflags"]))
+        if gcc_toolchain_flag:
+          options.extend(['-DGCC_TOOLCHAIN_PATH={0}'.format(gcc_toolchain_flag[0].split('=')[-1])])
+
         return options
 
 
