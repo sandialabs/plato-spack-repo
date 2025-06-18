@@ -194,6 +194,9 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         if '+stk' in spec['platoengine']:
           options.extend([ '-DPLATOANALYZE_STK_ENABLED=ON' ])
+          
+        if '+cubit' in spec['platoengine']:
+          options.extend([ '-DPLATOANALYZE_CUBIT_ENABLED=ON' ])
 
         if '+expy' in spec['platoengine']:
           options.extend([ '-DEXPY=ON' ])
