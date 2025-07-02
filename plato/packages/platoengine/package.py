@@ -40,7 +40,7 @@ class Platoengine(CMakePackage, CudaPackage):
     
     depends_on( 'esp@124Lin', type=('build', 'link', 'run'), when='+esp')
     depends_on( 'numdiff', when='+regression')
-    depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi')
+    depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+log')
 
     depends_on( 'snopt', when='+snopt')
 
