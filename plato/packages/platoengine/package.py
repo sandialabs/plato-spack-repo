@@ -34,7 +34,7 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'snopt',          default=False,   description='Build with SNOPT'                )
     variant( 'python',         default=False,   description='Build and link with python. This option is needed for plugins that depend on python')
     variant( 'legacy',         default=True,    description='Build the original platoengine')
-    variant( 'cubit',          default=True,   description='Build shape optimization geometry that uses Cubit library in prebuilt binaries'                )
+    variant( 'cubit',          default=False,   description='Build shape optimization geometry that uses Cubit library in prebuilt binaries'                )
     
     conflicts( '+expy', when='-platomain')
     conflicts( '+iso',  when='-stk')
