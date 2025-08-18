@@ -54,14 +54,13 @@ class Platoengine(CMakePackage, CudaPackage):
     conflicts('~legacy', when='+services', msg='sevices requires legacy to be enabled')
     conflicts('~legacy', when='+esp', msg='esp requires legacy to be enabled')
     conflicts('~legacy', when='+expy', msg='expy requires legacy to be enabled')
-    conflicts('~legacy', when='+prune', msg='prune requires legacy to be enabled')
     conflicts('~legacy', when='+platoproxy', msg='platoproxy requires legacy to be enabled')
     conflicts('~stk', when='~legacy', msg='Stk is required to build new platoengine')
 
     depends_on( 'mpi',            type=('build','link','run'))
     depends_on( 'cmake@3.0.0:',   type='build')
  
-    trilinos_base_spec = 'trilinos@master_5_29_2025+exodus+chaco+intrepid+shards+rol+tpetra~mumps'
+    trilinos_base_spec = 'trilinos@develop_8_16_2025+exodus+chaco+intrepid+shards+rol+tpetra~mumps'
     trilinos_base_add_ons = ' gotype=int cxxstd=17'
     depends_on( trilinos_base_spec + trilinos_base_add_ons)
     depends_on( trilinos_base_spec + '+boost+krino+stk' + trilinos_base_add_ons, when='+stk')

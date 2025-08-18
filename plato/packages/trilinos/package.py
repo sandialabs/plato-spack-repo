@@ -42,6 +42,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     version("master", branch="master")
     version("develop", branch="develop")
+    version("develop_8_16_2025", commit="ff43eec1360e9f6516715de4561e32468d333e08") 
     version("master_5_29_2025", commit="e3e2557ad9a2fc359917a781f9209bb968562d59") 
     version("16_0_0_stk_ub_fix", commit="2b3b706e7eab81ed1a70d75d762596e741dac096") 
     version("16.1.0", sha256="e9651c88f581049457036cfc01b527a9d3903c257338eeeab942befd7452f23a")
@@ -411,18 +412,18 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     # ###################### Dependencies ##########################
 
     # External Kokkos
-    depends_on("kokkos@4.1.00", when="@14.4.0: +kokkos")
+    depends_on("kokkos@4.5.01", when="@14.4.0: +kokkos")
     depends_on("kokkos +wrapper", when="trilinos@14.4.0: +kokkos +wrapper")
     depends_on("kokkos ~wrapper", when="trilinos@14.4.0: +kokkos ~wrapper")
 
     for a in CudaPackage.cuda_arch_values:
         arch_str = "+cuda cuda_arch=" + a
-        kokkos_spec = "kokkos@4.1.00 " + arch_str
+        kokkos_spec = "kokkos@4.5.01 " + arch_str
         depends_on(kokkos_spec, when="@14.4.0: +kokkos " + arch_str)
 
     for a in ROCmPackage.amdgpu_targets:
         arch_str = "+rocm amdgpu_target={0}".format(a)
-        kokkos_spec = "kokkos@4.1.00 {0}".format(arch_str)
+        kokkos_spec = "kokkos@4.5.01 {0}".format(arch_str)
         depends_on(kokkos_spec, when="@14.4.0: +kokkos {0}".format(arch_str))
 
     depends_on("adios2", when="+adios2")
