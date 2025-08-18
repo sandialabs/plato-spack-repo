@@ -40,15 +40,12 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'cuda',       default=True,     description='Compile with Nvidia CUDA'     )
     variant( 'amgx',       default=True,     description='Compile with AMGX'            )
     variant( 'meshmap',    default=True,     description='Compile with MeshMap'         )
-    variant( 'mpmd',       default=True,     description='Compile with mpmd'            )
     variant( 'physics',    default=True,     description='Compile with all Physics'      )
     variant( 'helmholtz',  default=True,     description='Compile with Helmholtz filter' )
     variant( 'unittests',  default=True,     description='Compile with unit tests' )
     variant( 'enginemesh', default=True,     description='Compile with enginemesh as default' )
     variant( 'omega-h',    default=False,    description='Compile with enginemesh as default' )
-    variant( 'esp',        default=False,    description='Compile with ESP'             )
     variant( 'openmp',     default=False,    description='Compile with openmp'          )
-    variant( 'python',     default=False,    description='Compile with python'          )
     variant( 'tpetra',     default=False,    description='Compile with Tpetra'          )
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
     variant( 'umfpack',    default=False,    description='Compile with UMFPACK'         )
@@ -73,19 +70,15 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('kokkos-nvcc-wrapper@4.0.01', when='+cuda')
 
     depends_on('platoengine+legacy')
-    depends_on('platoengine~dakota',                                              when='+cuda+mpmd')
+    depends_on('platoengine~dakota',                                              when='+cuda')
     depends_on('platoengine+dakota',                                              when='+dakota_tests')
 
     depends_on('cmake@3.0.0:', type='build')
-    depends_on('python @3.8:',                               when='+python')
     
-    depends_on('platoengine+expy',                           when='+python')
     depends_on('platoengine+expy',                           when='+verificationtests')
 
     depends_on('arborx~mpi~cuda~serial @v1.1',              when='+meshmap')
     depends_on('amgx',                                      when='+amgx')
-    depends_on('esp@124Lin', type=('build', 'link', 'run'), when='+esp')
-    depends_on('platoengine+esp',                           when='+esp')
     depends_on('numdiff',                                   when='+integration_tests')
     depends_on('py-numpy',                                  when='+dakota_tests')
 
@@ -97,8 +90,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('gnuplot',  when='+verificationdoc')
     depends_on('doxygen',  when='+verificationdoc')
 
-    conflicts('+enginemesh', when='~mpmd')
-    conflicts('+meshmap',  when='~mpmd')
     conflicts('+amgx',     when='~cuda')
     conflicts('+openmp',   when='+cuda')
     depends_on('omega-h@develop_bb6b', type=('build', 'link', 'run'), when='+omega-h')
@@ -127,7 +118,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
         options.extend(
             [
-                self.define_from_variant("PLATOANALYZE_ENABLE_PYTHON","python"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_ENGINEMESH","enginemesh"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_CUDA","cuda"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_MESHMAP","meshmap"),
@@ -150,14 +140,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
         else:
             options.append('-DLEGACY_BUILD=OFF')
 
-        if '+mpmd' in spec:
-          options.extend([ '-DPLATOANALYZE_ENABLE_MPMD=ON' ])
-
-          platoengine_dir = spec['platoengine'].prefix
-          options.extend([ '-DPLATOENGINE_PREFIX:PATH={0}'.format(platoengine_dir) ])
-
-        else:
-          options.extend([ '-DPLATOANALYZE_ENABLE_MPMD=OFF' ])
+        platoengine_dir = spec['platoengine'].prefix
+        options.extend([ '-DPLATOENGINE_PREFIX:PATH={0}'.format(platoengine_dir) ])
 
         if '+omega-h' in spec:
           omega_h_dir = spec['omega-h'].prefix
@@ -170,13 +154,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
           options.extend([ '-DUMFPACK_LIB_DIR:PATH={0}'.format(umfpack_lib_dir) ])
           options.extend([ '-DUMFPACK_INC_DIR:PATH={0}'.format(umfpack_inc_dir) ])
         
-        if '+esp' in spec:
-          options.extend([ '-DPLATOANALYZE_ENABLE_ESP=ON' ])
-          esp_lib_dir = spec['esp'].prefix+'/lib'
-          esp_inc_dir = spec['esp'].prefix+'/include'
-          options.extend([ '-DESP_LIB_DIR:PATH={0}'.format(esp_lib_dir) ])
-          options.extend([ '-DESP_INC_DIR:PATH={0}'.format(esp_inc_dir) ])
-
         if '+amgx' in spec:
           amgx_dir = spec['amgx'].prefix
           options.extend([ '-DAMGX_PREFIX:PATH={0}'.format(amgx_dir) ])
@@ -208,8 +185,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
     def setup_run_environment(self, run_env):
         run_env.prepend_path('LD_LIBRARY_PATH', self.spec['platoanalyze'].prefix.lib)
-        if '+python' in self.spec:
-          run_env.prepend_path('PYTHONPATH', self.prefix.lib)
 
     def setup_build_environment(self, env):
         if '+cuda' in self.spec:
