@@ -24,7 +24,6 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'esp',            default=False,   description='Turn on esp'                     )
     variant( 'expy',           default=False,   description='Compile exodus/python API'       )
     variant( 'iso',            default=False,   description='Turn on iso extraction'          )
-    variant( 'platoproxy',     default=False,   description='Compile PlatoProxy'              )
     variant( 'prune',          default=False,   description='Turn on use of prune and refine' )
     variant( 'stk',            default=False,   description='Turn on use of stk'              )
     variant( 'dakota',         default=False,   description='Compile with Dakota'             )
@@ -54,7 +53,6 @@ class Platoengine(CMakePackage, CudaPackage):
     conflicts('~legacy', when='+services', msg='sevices requires legacy to be enabled')
     conflicts('~legacy', when='+esp', msg='esp requires legacy to be enabled')
     conflicts('~legacy', when='+expy', msg='expy requires legacy to be enabled')
-    conflicts('~legacy', when='+platoproxy', msg='platoproxy requires legacy to be enabled')
     conflicts('~stk', when='~legacy', msg='Stk is required to build new platoengine')
 
     depends_on( 'mpi',            type=('build','link','run'))
@@ -106,7 +104,6 @@ class Platoengine(CMakePackage, CudaPackage):
             [
                 self.define_from_variant("PLATOENGINE_ENABLE_CUDA","cuda"),
                 self.define_from_variant("PLATOMAIN","platomain"),
-                self.define_from_variant("PLATOPROXY","platoproxy"),
                 self.define_from_variant("UNIT_TESTING","unit_testing"),
                 self.define_from_variant("ENABLE_ISO","iso"),
                 self.define_from_variant("ENABLE_PRUNE","prune"),
