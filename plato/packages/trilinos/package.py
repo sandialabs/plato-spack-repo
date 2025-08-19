@@ -1,4 +1,4 @@
-# Copyright 2013-2023 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -412,18 +412,21 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     # ###################### Dependencies ##########################
 
     # External Kokkos
-    depends_on("kokkos@4.5.01", when="@14.4.0: +kokkos")
+    depends_on("kokkos@4.4.01", when="@develop_8_16_2025 +kokkos")
+    depends_on("kokkos@4.3.01", when="@16.0.0 +kokkos")
+    depends_on("kokkos@4.2.01", when="@15.1.0:15.1.1 +kokkos")
+
     depends_on("kokkos +wrapper", when="trilinos@14.4.0: +kokkos +wrapper")
     depends_on("kokkos ~wrapper", when="trilinos@14.4.0: +kokkos ~wrapper")
 
     for a in CudaPackage.cuda_arch_values:
-        arch_str = "+cuda cuda_arch=" + a
-        kokkos_spec = "kokkos@4.5.01 " + arch_str
-        depends_on(kokkos_spec, when="@14.4.0: +kokkos " + arch_str)
+        arch_str = "+cuda cuda_arch={0}".format(a)
+        kokkos_spec = "kokkos {0}".format(arch_str)
+        depends_on(kokkos_spec, when="@14.4.0: +kokkos {0}".format(arch_str))
 
     for a in ROCmPackage.amdgpu_targets:
         arch_str = "+rocm amdgpu_target={0}".format(a)
-        kokkos_spec = "kokkos@4.5.01 {0}".format(arch_str)
+        kokkos_spec = "kokkos {0}".format(arch_str)
         depends_on(kokkos_spec, when="@14.4.0: +kokkos {0}".format(arch_str))
 
     depends_on("adios2", when="+adios2")
