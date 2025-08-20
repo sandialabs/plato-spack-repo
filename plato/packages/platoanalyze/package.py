@@ -59,7 +59,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'micromorphic', default=False, description='Compile with micromorphic physics' ) 
     variant( 'all_penalty', default=False, description='Compile with all penalization schemes, including RAMP and Heaviside' )
 
-    depends_on('trilinos@develop_8_16_2025+kokkos+kokkoskernels+exodus gotype=int cxxstd=17')
+    depends_on('trilinos@develop_testing+kokkos+kokkoskernels+exodus gotype=int cxxstd=17')
     depends_on('trilinos+cuda+wrapper', when='+cuda')
     depends_on('trilinos+openmp', when='+openmp')
     depends_on('trilinos+tacho', when='+tacho')

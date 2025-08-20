@@ -42,8 +42,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     version("master", branch="master")
     version("develop", branch="develop")
-    version("develop_8_16_2025", commit="ff43eec1360e9f6516715de4561e32468d333e08") 
-    version("master_5_29_2025", commit="e3e2557ad9a2fc359917a781f9209bb968562d59") 
+    version("develop_testing", commit="9245c7c36eccff9a75b698385c6ab3d7186e2026") 
     version("16_0_0_stk_ub_fix", commit="2b3b706e7eab81ed1a70d75d762596e741dac096") 
     version("16.1.0", sha256="e9651c88f581049457036cfc01b527a9d3903c257338eeeab942befd7452f23a")
     version("16.0.0", sha256="46bfc40419ed2aa2db38c144fb8e61d4aa8170eaa654a88d833ba6b92903f309")
@@ -412,7 +411,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     # ###################### Dependencies ##########################
 
     # External Kokkos
-    depends_on("kokkos@4.4.01", when="@develop_8_16_2025 +kokkos")
+    depends_on("kokkos@4.4.01", when="@develop_testing +kokkos")
     depends_on("kokkos@4.3.01", when="@16.0.0 +kokkos")
     depends_on("kokkos@4.2.01", when="@15.1.0:15.1.1 +kokkos")
 
