@@ -52,13 +52,13 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'dev_build',  default=False,    description='Build with dev features such as sanitizers')
 
     variant( 'integration_tests', default=True, description='Compile with engine integration tests')
-    variant( 'dakota_tests', default=False, description='Compile with Dakota integration tests')
     variant( 'verificationtests', default=True, description='Compile with verification tests' )
     variant( 'verificationdoc', default=False,  description='Compile with VerificationDoc target' )
     variant( 'hex_elements', default=False, description='Compile with hex elements' ) 
     variant( 'micromorphic', default=False, description='Compile with micromorphic physics' ) 
     variant( 'all_penalty', default=False, description='Compile with all penalization schemes, including RAMP and Heaviside' )
 
+    depends_on('platoengine')
     depends_on('trilinos@develop_testing+kokkos+kokkoskernels+exodus gotype=int cxxstd=17')
     depends_on('trilinos+cuda+wrapper', when='+cuda')
     depends_on('trilinos+openmp', when='+openmp')
@@ -69,23 +69,21 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
     depends_on('kokkos-nvcc-wrapper@4.0.01', when='+cuda')
 
-    depends_on('platoengine+legacy')
-    depends_on('platoengine~dakota',                                              when='+cuda')
-    depends_on('platoengine+dakota',                                              when='+dakota_tests')
-
-    depends_on('cmake@3.0.0:', type='build')
+    depends_on('cmake@3.0.0:', type='build')   
     
-    depends_on('platoengine+expy',                           when='+verificationtests')
-
+    depends_on( 'python@3.8:',    type=('build', 'link', 'run'), when='+verificationtests'    )
+    depends_on( 'python@3.8:',    type=('build', 'link', 'run'), when='+integration_tests'    )
+    depends_on( 'py-numpy',      when='+verificationtests'         )
+    depends_on( 'py-numpy',      when='+integration_tests'         )
+    depends_on('platoengine+unit_testing', when='+integration_tests'    )
+    depends_on('platoengine+unit_testing', when='+verificationtests'    )
     depends_on('arborx~mpi~cuda~serial @v1.1',              when='+meshmap')
     depends_on('amgx',                                      when='+amgx')
     depends_on('numdiff',                                   when='+integration_tests')
-    depends_on('py-numpy',                                  when='+dakota_tests')
-
+    
     # omega-h writes vtk files so paraview is required for verification tests
     # remove this dependency when omega-h is no longer a variant
     depends_on('paraview+python build_edition=canonical',  when='+verificationtests~enginemesh')
-
     depends_on('paraview+python build_edition=canonical',  when='+verificationdoc')
     depends_on('gnuplot',  when='+verificationdoc')
     depends_on('doxygen',  when='+verificationdoc')
@@ -126,7 +124,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
                 self.define_from_variant("HELMHOLTZ","helmholtz"),
                 self.define_from_variant("PLATOANALYZE_UNIT_TEST","unittests"),
                 self.define_from_variant("PLATOANALYZE_INTEGRATION_TESTS","integration_tests"),
-                self.define_from_variant("PLATOANALYZE_DAKOTA_TESTS","dakota_tests"),
                 self.define_from_variant("PLATOANALYZE_SMOKE_TESTS","verificationtests"),
                 self.define_from_variant("HEX_ELEMENTS","hex_elements"),
                 self.define_from_variant("MICROMORPHIC","micromorphic"),
@@ -134,11 +131,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
                 self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","dev_build")
             ]
         )
-
-        if '+legacy' in self.spec['platoengine']:
-            options.append('-DLEGACY_BUILD=ON')
-        else:
-            options.append('-DLEGACY_BUILD=OFF')
 
         platoengine_dir = spec['platoengine'].prefix
         options.extend([ '-DPLATOENGINE_PREFIX:PATH={0}'.format(platoengine_dir) ])
@@ -166,25 +158,22 @@ class Platoanalyze(CMakePackage, CudaPackage):
           options.extend([ '-DSTABILIZED=OFF' ])
           options.extend([ '-DPLASTICITY=OFF' ])
 
-        if '+services' in spec['platoengine']:
-          options.extend(['-DPLATOANALYZE_PE_SERVICES=ON'])
-
-        if '+stk' in spec['platoengine']:
-          options.extend([ '-DPLATOANALYZE_STK_ENABLED=ON' ])
-          
         if '+cubit' in spec['platoengine']:
           options.extend([ '-DPLATOANALYZE_CUBIT_ENABLED=ON' ])
 
-        if '+expy' in spec['platoengine']:
-          options.extend([ '-DEXPY=ON' ])
+        if '+verificationtests' in self.spec or '+integration_tests' in self.spec:
+          options.extend(
+             ['-DPython3_EXECUTABLE={0}/python3'.format(self.spec['python'].prefix.bin)]
+          )
 
-        if '+iso' in spec['platoengine']:
-          options.extend([ '-DENABLE_ISO=ON' ])
-        
         return options
 
     def setup_run_environment(self, run_env):
         run_env.prepend_path('LD_LIBRARY_PATH', self.spec['platoanalyze'].prefix.lib)
+        if '+verificationtests' in self.spec or '+integration_tests' in self.spec:
+          run_env.prepend_path('PYTHONPATH', self.prefix.lib)
+          run_env.prepend_path('PYTHONPATH', self.prefix.etc)
+
 
     def setup_build_environment(self, env):
         if '+cuda' in self.spec:
