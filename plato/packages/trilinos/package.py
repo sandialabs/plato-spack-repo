@@ -42,6 +42,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     version("master", branch="master")
     version("develop", branch="develop")
+    version("16_1_0_stk_segfault_fix", commit="93f000ec8736cc185d37046bfa07da7c5a694169") 
     version("16_0_1_krino_snapping", commit="9245c7c36eccff9a75b698385c6ab3d7186e2026") 
     version("16_0_0_stk_ub_fix", commit="2b3b706e7eab81ed1a70d75d762596e741dac096") 
     version("16.1.0", sha256="e9651c88f581049457036cfc01b527a9d3903c257338eeeab942befd7452f23a")
@@ -411,6 +412,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     # ###################### Dependencies ##########################
 
     # External Kokkos
+    depends_on("kokkos@4.7.00", when="@16_1_0_stk_segfault_fix +kokkos")
     depends_on("kokkos@4.4.01", when="@16_0_1_krino_snapping +kokkos")
     depends_on("kokkos@4.3.01", when="@16.0.0 +kokkos")
     depends_on("kokkos@4.2.01", when="@15.1.0:15.1.1 +kokkos")
@@ -502,7 +504,9 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     # ###################### Patches ##########################
 
-    patch("akri_tuple.patch", when="@16.1 +krino") # Added by Plato
+    patch("akri_tuple.patch", when="@=16.1.0 +krino") # Added by Plato
+    patch("stk_bucket_inline_static.patch", when="@16_1_0_stk_segfault_fix +stk") # Added by Plato
+    patch("stk_ub_fix.patch", when="@16_1_0_stk_segfault_fix +stk") # Added by Plato
 
     patch("shylu-node-optional.patch", when="@13:14.4.0 +shylu")
 

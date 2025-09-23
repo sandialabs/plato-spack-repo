@@ -1,0 +1,60 @@
+diff --git a/packages/stk/stk_mesh/stk_mesh/baseImpl/BucketRepository.cpp b/packages/stk/stk_mesh/stk_mesh/baseImpl/BucketRepository.cpp
+index 430fbb6c9e1..fe17770d0a3 100644
+--- a/packages/stk/stk_mesh/stk_mesh/baseImpl/BucketRepository.cpp
++++ b/packages/stk/stk_mesh/stk_mesh/baseImpl/BucketRepository.cpp
+@@ -427,6 +427,25 @@ void BucketRepository::set_remove_mode_fill_and_sort()
+   }
+ }
+ 
++const BucketVector & BucketRepository::buckets( EntityRank rank ) const
++{
++  static const BucketVector emptyBucketVector;
++
++  if( rank < static_cast<EntityRank>(m_buckets.size()) )
++  {
++    if (m_need_sync_from_partitions[rank])
++    {
++      const_cast<BucketRepository *>(this)->sync_from_partitions(rank);
++    }
++
++    return m_buckets[ rank ];
++  }
++  else
++  {
++    return emptyBucketVector;
++  }
++}
++
+ } // namespace impl
+ } // namespace mesh
+ } // namespace stk
+diff --git a/packages/stk/stk_mesh/stk_mesh/baseImpl/BucketRepository.hpp b/packages/stk/stk_mesh/stk_mesh/baseImpl/BucketRepository.hpp
+index d910c8bed7b..5e80416dc31 100644
+--- a/packages/stk/stk_mesh/stk_mesh/baseImpl/BucketRepository.hpp
++++ b/packages/stk/stk_mesh/stk_mesh/baseImpl/BucketRepository.hpp
+@@ -70,24 +70,7 @@ public:
+    *
+    *  Don't call inside BucketRepository member functions!
+    */
+-  const BucketVector & buckets( EntityRank rank ) const
+-  {
+-    static const BucketVector emptyBucketVector;
+-
+-    if( rank < static_cast<EntityRank>(m_buckets.size()) )
+-    {
+-      if (m_need_sync_from_partitions[rank])
+-      {
+-        const_cast<BucketRepository *>(this)->sync_from_partitions(rank);
+-      }
+-
+-      return m_buckets[ rank ];
+-    }
+-    else
+-    {
+-      return emptyBucketVector;
+-    }
+-  }
++  const BucketVector & buckets( EntityRank rank ) const;
+ 
+   BulkData& mesh() const { return m_mesh; }
+ 
