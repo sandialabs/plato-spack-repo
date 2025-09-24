@@ -42,6 +42,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     version("master", branch="master")
     version("develop", branch="develop")
+    version("16_1_0_update_krino_api", commit="fc8b0561871d5092aae01aa4a425729dc4471538")
     version("16_1_0_stk_segfault_fix", commit="93f000ec8736cc185d37046bfa07da7c5a694169") 
     version("16_0_1_krino_snapping", commit="9245c7c36eccff9a75b698385c6ab3d7186e2026") 
     version("16_0_0_stk_ub_fix", commit="2b3b706e7eab81ed1a70d75d762596e741dac096") 
