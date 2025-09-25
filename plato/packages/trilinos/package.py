@@ -506,8 +506,8 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     # ###################### Patches ##########################
 
     patch("akri_tuple.patch", when="@=16.1.0 +krino") # Added by Plato
-    patch("stk_bucket_inline_static.patch", when="@16_1_0_stk_segfault_fix +stk") # Added by Plato
-    patch("stk_ub_fix.patch", when="@16_1_0_stk_segfault_fix +stk") # Added by Plato
+    patch("stk_bucket_inline_static.patch", when="@16_1_0_stk_segfault_fix,16_1_0_update_krino_api +stk") # Added by Plato
+    patch("stk_ub_fix.patch", when="@16_1_0_stk_segfault_fix,16_1_0_update_krino_api +stk") # Added by Plato
 
     patch("shylu-node-optional.patch", when="@13:14.4.0 +shylu")
 
