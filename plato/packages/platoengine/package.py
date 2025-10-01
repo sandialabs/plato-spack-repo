@@ -22,24 +22,24 @@ class Platoengine(CMakePackage):
     variant( 'unit_testing',   default=True,    description='Add unit testing'                )
     variant( 'esp',            default=False,   description='Turn on esp'                     )
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
-    variant( 'dev_build',      default=False,   description='Build with dev features such as sanitizers and clang-tidy')
     variant( 'snopt',          default=False,   description='Build with SNOPT'                )
     variant( 'python',         default=False,   description='Build and link with python. This option is needed for plugins that depend on python')
     variant( 'cubit',          default=False,   description='Build shape optimization geometry that uses Cubit library in prebuilt binaries'                )
+    variant( 'cmake_preset',   values=('none', 'default', 'dev_build'), default='default', description='Chooses a cmake configuration preset, which controls build parameters such as warnings' )
 
-    depends_on('cxx',type="build")
-    depends_on( 'mpi',            type=('build','link','run'))
-    depends_on( 'cmake@3.0.0:',   type='build')
-    depends_on( 'googletest',                                    when='+unit_testing' )
+    depends_on( 'cxx', type="build")
+    depends_on( 'mpi', type=('build','link','run'))
+    depends_on( 'cmake@3.21.0:', type='build')
+    depends_on( 'googletest', when='+unit_testing' )
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+log')
     depends_on( 'trilinos@16_1_0_update_krino_api+exodus+chaco+shards+rol+tpetra~epetra~epetraext~mumps+boost+percept+krino+stk gotype=int cxxstd=17' )    
     depends_on( 'esp@124Lin', type=('build', 'link', 'run'), when='+esp')
     depends_on( 'numdiff', when='+regression')
     depends_on( 'snopt', when='+snopt')
-    depends_on('python@3.8:', when='+python')
-    depends_on('python@3.8:', when='+regression')
-    depends_on('py-numpy',   when='+regression' )
-    depends_on( 'llvm', when='+dev_build', type='build' )
+    depends_on( 'python@3.8:', when='+python')
+    depends_on( 'python@3.8:', when='+regression')
+    depends_on( 'py-numpy', when='+regression' )
+    depends_on( 'llvm', when='cmake_preset=dev_build', type='build' )
 
     keep_werror = "all"
 
@@ -47,26 +47,28 @@ class Platoengine(CMakePackage):
         spec = self.spec
 
         options = []
+
+        if self.spec.variants['cmake_preset'].value != 'none':
+            options.extend(
+                [
+                    '--preset {}'.format(self.spec.variants['cmake_preset'].value)
+                ]
+            )
+
         options.extend(
             [
-                self.define("CMAKE_EXPORT_COMPILE_COMMANDS", "ON"),
                 self.define("CMAKE_C_COMPILER", spec["mpi"].mpicc),
                 self.define("CMAKE_CXX_COMPILER", spec["mpi"].mpicxx),
                 self.define("CMAKE_Fortran_COMPILER", spec["mpi"].mpifc),
             ]
         )
 
-        trilinos_dir = spec['trilinos'].prefix
-        options.extend([ '-DTRILINOS_INSTALL_DIR:FILEPATH={0}'.format(trilinos_dir) ])
-        
         options.extend(
             [
                 self.define_from_variant("UNIT_TESTING","unit_testing"),
                 self.define_from_variant("SIERRA_TESTS_ENABLED","sierra_tests"),
                 self.define_from_variant("REGRESSION","regression"),
                 self.define_from_variant("SEACAS","regression"),
-                self.define_from_variant("BUILD_WITH_CLANG_TIDY","dev_build"),
-                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","dev_build"),
                 self.define_from_variant("LINK_WITH_PYTHON","python"),
                 self.define_from_variant("CUBIT_ENABLED","cubit")
             ]
@@ -100,8 +102,3 @@ class Platoengine(CMakePackage):
         
         return options
 
-    
-    def setup_run_environment(self, run_env):
-        run_env.prepend_path('LD_LIBRARY_PATH', self.spec['platoengine'].prefix.lib)
-        run_env.prepend_path('LD_LIBRARY_PATH', self.spec['mpi'].prefix.lib)
-        run_env.prepend_path('PATH', self.prefix.etc)
