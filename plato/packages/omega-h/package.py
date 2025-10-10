@@ -2,7 +2,9 @@
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
-
+from spack.package import *
+from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack_repo.builtin.build_systems.cuda import CudaPackage
 
 class OmegaH(CMakePackage, CudaPackage):
     """Omega_h is a C++11 library providing data structures and algorithms
@@ -51,7 +53,9 @@ class OmegaH(CMakePackage, CudaPackage):
     depends_on('mpi', when='+mpi')
     depends_on('trilinos +kokkos', when='+trilinos')
     depends_on('zlib', when='+zlib')
-
+    depends_on("cxx", type="build")
+    depends_on("c", type="build", when="+mpi")
+    
     # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86610
     conflicts('%gcc@8:8.2', when='@:9.22.1')
 

@@ -1,5 +1,7 @@
+from spack_repo.builtin.build_systems.generic import Package
 from distutils.dir_util import copy_tree
 from spack import *
+from spack.package import *
 
 class Esp(Package):
     """Engineering SketchPad by Bob Haimes at MIT"""
@@ -78,4 +80,3 @@ class Esp(Package):
         run_env.set('CASREV', '7.6')
       else:
         run_env.set('CASREV', '7.7')
-

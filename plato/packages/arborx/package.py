@@ -4,7 +4,8 @@
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
 from spack import *
-
+from spack.package import *
+from spack_repo.builtin.build_systems.cmake import CMakePackage
 
 class Arborx(CMakePackage):
     """ArborX is a performance-portable library for geometric search"""
@@ -23,6 +24,7 @@ class Arborx(CMakePackage):
     variant('serial', default=True, description='enable Serial backend (default)')
     variant('mpi', default=True, description='enable MPI')
 
+    depends_on('cxx',type="build")
     depends_on('cmake@3.12:', type='build')
     depends_on('cuda', when='+cuda')
     depends_on('mpi', when='+mpi')
