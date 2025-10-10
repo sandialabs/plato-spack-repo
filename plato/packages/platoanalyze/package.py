@@ -23,7 +23,9 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
 from spack import *
-
+from spack.package import *
+from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack_repo.builtin.build_systems.cuda import CudaPackage
 
 class Platoanalyze(CMakePackage, CudaPackage):
     """Plato Analyze"""
@@ -32,7 +34,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     url      = "https://github.com/platoengine/platoanalyze"
     git      = "https://github.com/platoengine/platoanalyze.git"
 
-    maintainers = ['rviertel', 'jrobbin']
+    maintainers = ['acsokol', 'bwclark', 'ralberd', 'rawildm', 'shardes']
 
     version('develop', branch='develop', submodules=True, preferred=True)
     version('release-v0.1.0', branch='release-v0.1.0', submodules=True)
@@ -58,16 +60,17 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'micromorphic', default=False, description='Compile with micromorphic physics' ) 
     variant( 'all_penalty', default=False, description='Compile with all penalization schemes, including RAMP and Heaviside' )
 
+    depends_on('cxx',type="build")
     depends_on('platoengine')
-    depends_on('trilinos@16_1_0_update_krino_api+kokkos+kokkoskernels+exodus gotype=int cxxstd=17')
+    depends_on('trilinos@16_1_0_update_krino_api+kokkos+kokkoskernels+exodus+boost~epetra~epetraext gotype=int cxxstd=17')
     depends_on('trilinos+cuda+wrapper', when='+cuda')
     depends_on('trilinos+openmp', when='+openmp')
-    depends_on('trilinos+tacho', when='+tacho')
+    depends_on('trilinos+amesos2+tpetra+kokkos+tacho', when='+tacho')
     depends_on('suite-sparse', when='+umfpack')
     depends_on('trilinos+tpetra+belos+ifpack2+amesos2+muelu+zoltan2',             when='+tpetra')
     depends_on('trilinos~tpetra~amesos2~ifpack2~belos~muelu~zoltan2',             when='~tpetra')
 
-    depends_on('kokkos-nvcc-wrapper@4.0.01', when='+cuda')
+    depends_on('kokkos-nvcc-wrapper@4.7.00', when='+cuda')
 
     depends_on('cmake@3.0.0:', type='build')   
     
@@ -165,7 +168,9 @@ class Platoanalyze(CMakePackage, CudaPackage):
           options.extend(
              ['-DPython3_EXECUTABLE={0}/python3'.format(self.spec['python'].prefix.bin)]
           )
-
+        if self.compiler.name == 'clang':
+            gcc_toolchain_path = f"{self.spec['gcc'].prefix}"
+            options.extend(['-DGCC_TOOLCHAIN_PATH={0}'.format(gcc_toolchain_path)])
         return options
 
     def setup_run_environment(self, run_env):
@@ -173,7 +178,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
         if '+verificationtests' in self.spec or '+integration_tests' in self.spec:
           run_env.prepend_path('PYTHONPATH', self.prefix.lib)
           run_env.prepend_path('PYTHONPATH', self.prefix.etc)
-
 
     def setup_build_environment(self, env):
         if '+cuda' in self.spec:

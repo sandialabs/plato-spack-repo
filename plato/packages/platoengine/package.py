@@ -2,22 +2,21 @@
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
+import pathlib
+from spack.package import *
+from spack_repo.builtin.build_systems.cmake import CMakePackage
 
-from spack import *
-
-
-class Platoengine(CMakePackage, CudaPackage):
+class Platoengine(CMakePackage):
     """Plato Engine - Platform for Topology Optimization"""
     
     homepage = "https://www.sandia.gov/plato3d/"
     url      = "https://github.com/sandialabs/platoengine.git"
     git      = "https://github.com/sandialabs/platoengine.git"
 
-    maintainers = ['rviertel', 'jrobbin']
+    maintainers = ['acsokol', 'bwclark', 'ralberd', 'rawildm', 'shardes']
 
     version('develop', branch='develop', preferred=True)
     version('release-v0.1.0', branch='release-v0.1.0')
-
     
     variant( 'regression',     default=True,    description='Add regression tests'            )
     variant( 'unit_testing',   default=True,    description='Add unit testing'                )
@@ -27,27 +26,19 @@ class Platoengine(CMakePackage, CudaPackage):
     variant( 'snopt',          default=False,   description='Build with SNOPT'                )
     variant( 'python',         default=False,   description='Build and link with python. This option is needed for plugins that depend on python')
     variant( 'cubit',          default=False,   description='Build shape optimization geometry that uses Cubit library in prebuilt binaries'                )
-    
+
+    depends_on('cxx',type="build")
     depends_on( 'mpi',            type=('build','link','run'))
     depends_on( 'cmake@3.0.0:',   type='build')
- 
-    trilinos_base_spec = 'trilinos@16_1_0_update_krino_api+exodus+chaco+shards+rol+tpetra~mumps'
-    trilinos_base_add_ons = ' gotype=int cxxstd=17'
-    depends_on( trilinos_base_spec + trilinos_base_add_ons)
-    depends_on( trilinos_base_spec + '+boost+krino+stk+percept+zoltan' + trilinos_base_add_ons)
-    depends_on( trilinos_base_spec + '+cuda+wrapper' + trilinos_base_add_ons, when='+cuda')
     depends_on( 'googletest',                                    when='+unit_testing' )
-    
+    depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+log')
+    depends_on( 'trilinos@16_1_0_update_krino_api+exodus+chaco+shards+rol+tpetra~epetra~epetraext~mumps+boost+percept+krino+stk gotype=int cxxstd=17' )    
     depends_on( 'esp@124Lin', type=('build', 'link', 'run'), when='+esp')
     depends_on( 'numdiff', when='+regression')
-    depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+log')
-
     depends_on( 'snopt', when='+snopt')
-
     depends_on('python@3.8:', when='+python')
     depends_on('python@3.8:', when='+regression')
     depends_on('py-numpy',   when='+regression' )
-    
     depends_on( 'llvm', when='+dev_build', type='build' )
 
     keep_werror = "all"
@@ -61,16 +52,15 @@ class Platoengine(CMakePackage, CudaPackage):
                 self.define("CMAKE_EXPORT_COMPILE_COMMANDS", "ON"),
                 self.define("CMAKE_C_COMPILER", spec["mpi"].mpicc),
                 self.define("CMAKE_CXX_COMPILER", spec["mpi"].mpicxx),
-                self.define("CMAKE_Fortran_COMPILER", spec["mpi"].mpifc)
+                self.define("CMAKE_Fortran_COMPILER", spec["mpi"].mpifc),
             ]
         )
 
         trilinos_dir = spec['trilinos'].prefix
         options.extend([ '-DTRILINOS_INSTALL_DIR:FILEPATH={0}'.format(trilinos_dir) ])
-
+        
         options.extend(
             [
-                self.define_from_variant("PLATOENGINE_ENABLE_CUDA","cuda"),
                 self.define_from_variant("UNIT_TESTING","unit_testing"),
                 self.define_from_variant("SIERRA_TESTS_ENABLED","sierra_tests"),
                 self.define_from_variant("REGRESSION","regression"),
@@ -102,22 +92,16 @@ class Platoengine(CMakePackage, CudaPackage):
                   '-DSNOPT_INC_DIR:PATH={0}'.format(snopt_inc_dir)
               ]
             )
-
-        gcc_toolchain_flag = list(filter(lambda flag: "gcc-toolchain" in flag, spec.compiler_flags["cxxflags"]))
+        
+        gcc_toolchain_flag = list(filter(lambda flag: "gcc-toolchain" in flag, self.spec.compiler_flags["cxxflags"]))
         if gcc_toolchain_flag:
-          options.extend(['-DGCC_TOOLCHAIN_PATH={0}'.format(gcc_toolchain_flag[0].split('=')[-1])])
-
+            gcc_toolchain_path = gcc_toolchain_flag[0].split('=')[-1]
+            options.extend(['-DGCC_TOOLCHAIN_PATH={0}'.format(gcc_toolchain_path)])
+        
         return options
 
-
+    
     def setup_run_environment(self, run_env):
         run_env.prepend_path('LD_LIBRARY_PATH', self.spec['platoengine'].prefix.lib)
         run_env.prepend_path('LD_LIBRARY_PATH', self.spec['mpi'].prefix.lib)
         run_env.prepend_path('PATH', self.prefix.etc)
-
-    def setup_build_environment(self, env):
-        if '+cuda' in self.spec:
-            # Overwrite mpi compiler env vars with nvcc_wrapper
-            env.set("OMPI_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
-            env.set("MPICH_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
-            env.set("MPICXX_CXX", self.spec["kokkos-nvcc-wrapper"].kokkos_cxx)
