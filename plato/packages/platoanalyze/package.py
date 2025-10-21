@@ -51,7 +51,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'tpetra',     default=False,    description='Compile with Tpetra'          )
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
     variant( 'umfpack',    default=False,    description='Compile with UMFPACK'         )
-    variant( 'dev_build',  default=False,    description='Build with dev features such as sanitizers')
 
     variant( 'integration_tests', default=True, description='Compile with engine integration tests')
     variant( 'verificationtests', default=True, description='Compile with verification tests' )
@@ -59,6 +58,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'hex_elements', default=False, description='Compile with hex elements' ) 
     variant( 'micromorphic', default=False, description='Compile with micromorphic physics' ) 
     variant( 'all_penalty', default=False, description='Compile with all penalization schemes, including RAMP and Heaviside' )
+
+    variant( 'cmake_preset',   values=('none', 'default', 'dev_build'), default='default', description='Chooses a cmake configuration preset, which controls build parameters such as warnings' )
 
     depends_on('cxx',type="build")
     depends_on('platoengine')
@@ -106,6 +107,13 @@ class Platoanalyze(CMakePackage, CudaPackage):
         spec = self.spec
         options = []
 
+        if self.spec.variants['cmake_preset'].value != 'none':
+            options.extend(
+                [
+                    '--preset {}'.format(self.spec.variants['cmake_preset'].value)
+                ]
+            )
+
         options.extend([
           self.define("CMAKE_EXPORT_COMPILE_COMMANDS", "ON"),
           self.define("CMAKE_C_COMPILER", spec["mpi"].mpicc),
@@ -131,7 +139,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
                 self.define_from_variant("HEX_ELEMENTS","hex_elements"),
                 self.define_from_variant("MICROMORPHIC","micromorphic"),
                 self.define_from_variant("ALL_PENALTY","all_penalty"),
-                self.define_from_variant("BUILD_WITH_SANITIZER_FLAGS","dev_build")
             ]
         )
 
