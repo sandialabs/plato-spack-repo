@@ -73,17 +73,17 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
     depends_on('kokkos-nvcc-wrapper@4.7.00', when='+cuda')
 
-    depends_on('cmake@3.0.0:', type='build')   
+    depends_on('cmake@3.21.0:', type='build')   
     
-    depends_on( 'python@3.8:',    type=('build', 'link', 'run'), when='+verificationtests'    )
-    depends_on( 'python@3.8:',    type=('build', 'link', 'run'), when='+integration_tests'    )
-    depends_on( 'py-numpy',      when='+verificationtests'         )
-    depends_on( 'py-numpy',      when='+integration_tests'         )
-    depends_on('platoengine+unit_testing', when='+integration_tests'    )
-    depends_on('platoengine+unit_testing', when='+verificationtests'    )
-    depends_on('arborx~mpi~cuda~serial @v1.1',              when='+meshmap')
-    depends_on('amgx',                                      when='+amgx')
-    depends_on('numdiff',                                   when='+integration_tests')
+    depends_on('python@3.8:', type=('build', 'link', 'run'), when='+verificationtests')
+    depends_on('python@3.8:', type=('build', 'link', 'run'), when='+integration_tests')
+    depends_on('py-numpy', when='+verificationtests')
+    depends_on('py-numpy', when='+integration_tests')
+    depends_on('platoengine+unit_testing', when='+integration_tests')
+    depends_on('platoengine+unit_testing', when='+verificationtests')
+    depends_on('arborx@1.7', when='+meshmap')
+    depends_on('amgx', when='+amgx')
+    depends_on('numdiff', when='+integration_tests')
     
     # omega-h writes vtk files so paraview is required for verification tests
     # remove this dependency when omega-h is no longer a variant
@@ -92,13 +92,13 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('gnuplot',  when='+verificationdoc')
     depends_on('doxygen',  when='+verificationdoc')
 
-    conflicts('+amgx',     when='~cuda')
-    conflicts('+openmp',   when='+cuda')
+    conflicts('+amgx', when='~cuda')
+    conflicts('+openmp', when='+cuda')
     depends_on('omega-h@develop_bb6b', type=('build', 'link', 'run'), when='+omega-h')
-    depends_on('omega-h+cuda',                              when='+cuda+omega-h')
+    depends_on('omega-h+cuda', when='+cuda+omega-h')
 
-    conflicts('~omega-h',   when='~enginemesh')
-    conflicts('+omega-h',   when='+enginemesh')
+    conflicts('~omega-h', when='~enginemesh')
+    conflicts('+omega-h', when='+enginemesh')
     conflicts('+unittests', when='~physics')
 
     keep_werror = "all"
