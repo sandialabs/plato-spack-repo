@@ -27,6 +27,7 @@ class Platoengine(CMakePackage):
     variant( 'cubit',          default=False,   description='Build shape optimization geometry that uses Cubit library in prebuilt binaries'                )
     variant( 'cmake_preset',   values=('none', 'default', 'dev_build'), default='default', description='Chooses a cmake configuration preset, which controls build parameters such as warnings' )
 
+    depends_on( 'c', type="build")
     depends_on( 'cxx', type="build")
     depends_on( 'mpi', type=('build','link','run'))
     depends_on( 'cmake@3.21.0:', type='build')
@@ -54,14 +55,6 @@ class Platoengine(CMakePackage):
                     '--preset {}'.format(self.spec.variants['cmake_preset'].value)
                 ]
             )
-
-        options.extend(
-            [
-                self.define("CMAKE_C_COMPILER", spec["mpi"].mpicc),
-                self.define("CMAKE_CXX_COMPILER", spec["mpi"].mpicxx),
-                self.define("CMAKE_Fortran_COMPILER", spec["mpi"].mpifc),
-            ]
-        )
 
         options.extend(
             [

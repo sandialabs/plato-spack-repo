@@ -62,6 +62,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'cmake_preset',   values=('none', 'default', 'dev_build'), default='default', description='Chooses a cmake configuration preset, which controls build parameters such as warnings' )
 
     depends_on('cxx',type="build")
+    depends_on('c',type="build")
     depends_on('platoengine')
     depends_on('trilinos@16_1_0_update_krino_api+kokkos+kokkoskernels+exodus+boost~epetra~epetraext gotype=int cxxstd=17')
     depends_on('trilinos+cuda+wrapper', when='+cuda')
@@ -113,14 +114,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
                     '--preset {}'.format(self.spec.variants['cmake_preset'].value)
                 ]
             )
-
-        options.extend([
-          self.define("CMAKE_EXPORT_COMPILE_COMMANDS", "ON"),
-          self.define("CMAKE_C_COMPILER", spec["mpi"].mpicc),
-          self.define("CMAKE_CXX_COMPILER", spec["mpi"].mpicxx),
-          self.define("CMAKE_Fortran_COMPILER", spec["mpi"].mpifc),
-          self.define("BUILD_SHARED_LIBS", "ON")
-        ])
 
         trilinos_dir = spec['trilinos'].prefix
         options.extend([ '-DTrilinos_PREFIX:PATH={0}'.format(trilinos_dir) ])
