@@ -16,7 +16,7 @@ class Platoengine(CMakePackage):
     maintainers = ['acsokol', 'bwclark', 'ralberd', 'rawildm', 'shardes']
 
     version('develop', branch='develop', preferred=True)
-    version('release-v0.1.0', branch='release-v0.1.0')
+    version('2.0.2', tag='2.0.2')
     
     variant( 'regression',     default=True,    description='Add regression tests'            )
     variant( 'unit_testing',   default=True,    description='Add unit testing'                )
