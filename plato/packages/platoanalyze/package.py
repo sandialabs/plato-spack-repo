@@ -68,6 +68,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('trilinos+openmp', when='+openmp')
     depends_on('trilinos+amesos2+tpetra+kokkos+tacho', when='+tacho')
     depends_on('suite-sparse', when='+umfpack')
+    depends_on('suite-sparse+openmp', when='+umfpack+openmp')
+    depends_on('kokkos+openmp+serial', when='+openmp')
     depends_on('trilinos+tpetra+belos+ifpack2+amesos2+muelu+zoltan2',             when='+tpetra')
     depends_on('trilinos~tpetra~amesos2~ifpack2~belos~muelu~zoltan2',             when='~tpetra')
     depends_on('kokkos-nvcc-wrapper@4.7.00', when='+cuda')
