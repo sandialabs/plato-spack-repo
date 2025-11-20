@@ -45,7 +45,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'helmholtz',  default=True,     description='Compile with Helmholtz filter' )
     variant( 'unittests',  default=True,     description='Compile with unit tests' )
     variant( 'enginemesh', default=True,     description='Compile with enginemesh as default' )
-    variant( 'omega-h',    default=False,    description='Compile with enginemesh as default' )
+    variant( 'omega-h',    default=False,    description='Compile with omega-h as default' )
     variant( 'openmp',     default=False,    description='Compile with openmp'          )
     variant( 'tpetra',     default=False,    description='Compile with Tpetra'          )
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
@@ -119,6 +119,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
             [
                 self.define_from_variant("PLATOANALYZE_ENABLE_ENGINEMESH","enginemesh"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_CUDA","cuda"),
+                self.define_from_variant("PLATOANALYZE_ENABLE_OPENMP","openmp"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_MESHMAP","meshmap"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_TPETRA","tpetra"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_TACHO","tacho"),
