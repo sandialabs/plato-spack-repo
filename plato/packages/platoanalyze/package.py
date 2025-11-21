@@ -62,7 +62,12 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
     depends_on('cxx',type="build")
     depends_on('c',type="build")
+
     depends_on('platoengine')
+    depends_on('platoengine+unit_testing', when='+integration_tests')
+    depends_on('platoengine+unit_testing', when='+verificationtests')
+    depends_on('platoengine+openmp', when='+openmp')
+
     depends_on('trilinos@16_1_0_update_krino_api+kokkos+kokkoskernels+exodus+boost~epetra~epetraext gotype=int cxxstd=17')
     depends_on('trilinos+cuda+wrapper', when='+cuda')
     depends_on('trilinos+openmp', when='+openmp')
@@ -78,8 +83,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('python@3.8:', type=('build', 'link', 'run'), when='+integration_tests')
     depends_on('py-numpy', when='+verificationtests')
     depends_on('py-numpy', when='+integration_tests')
-    depends_on('platoengine+unit_testing', when='+integration_tests')
-    depends_on('platoengine+unit_testing', when='+verificationtests')
     depends_on('arborx@1.7', when='+meshmap')
     depends_on('amgx', when='+amgx')
     depends_on('numdiff', when='+integration_tests')
