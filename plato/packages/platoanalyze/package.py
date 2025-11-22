@@ -42,7 +42,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'cuda',       default=True,     description='Compile with Nvidia CUDA'     )
     variant( 'amgx',       default=True,     description='Compile with AMGX'            )
     variant( 'meshmap',    default=True,     description='Compile with MeshMap'         )
-    variant( 'physics',    default=True,     description='Compile with all Physics'      )
     variant( 'helmholtz',  default=True,     description='Compile with Helmholtz filter' )
     variant( 'unittests',  default=True,     description='Compile with unit tests' )
     variant( 'enginemesh', default=True,     description='Compile with enginemesh as default' )
@@ -56,7 +55,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'verificationtests', default=True, description='Compile with verification tests' )
     variant( 'verificationdoc', default=False,  description='Compile with VerificationDoc target' )
     variant( 'hex_elements', default=False, description='Compile with hex elements' ) 
-    variant( 'micromorphic', default=False, description='Compile with micromorphic physics' ) 
+    
     variant( 'all_penalty', default=False, description='Compile with all penalization schemes, including RAMP and Heaviside' )
 
     variant( 'cmake_preset',   values=('none', 'default', 'dev_build'), default='default', description='Chooses a cmake configuration preset, which controls build parameters such as warnings' )
@@ -71,11 +70,8 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('suite-sparse', when='+umfpack')
     depends_on('trilinos+tpetra+belos+ifpack2+amesos2+muelu+zoltan2',             when='+tpetra')
     depends_on('trilinos~tpetra~amesos2~ifpack2~belos~muelu~zoltan2',             when='~tpetra')
-
     depends_on('kokkos-nvcc-wrapper@4.7.00', when='+cuda')
-
     depends_on('cmake@3.21.0:', type='build')   
-    
     depends_on('python@3.8:', type=('build', 'link', 'run'), when='+verificationtests')
     depends_on('python@3.8:', type=('build', 'link', 'run'), when='+integration_tests')
     depends_on('py-numpy', when='+verificationtests')
@@ -100,8 +96,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
     conflicts('~omega-h', when='~enginemesh')
     conflicts('+omega-h', when='+enginemesh')
-    conflicts('+unittests', when='~physics')
-
+    
     keep_werror = "all"
     
     def cmake_args(self):
@@ -130,7 +125,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
                 self.define_from_variant("PLATOANALYZE_INTEGRATION_TESTS","integration_tests"),
                 self.define_from_variant("PLATOANALYZE_SMOKE_TESTS","verificationtests"),
                 self.define_from_variant("HEX_ELEMENTS","hex_elements"),
-                self.define_from_variant("MICROMORPHIC","micromorphic"),
                 self.define_from_variant("ALL_PENALTY","all_penalty"),
             ]
         )
@@ -153,13 +147,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
           amgx_dir = spec['amgx'].prefix
           options.extend([ '-DAMGX_PREFIX:PATH={0}'.format(amgx_dir) ])
           options.extend([ '-DPLATOANALYZE_ENABLE_AMGX=ON' ])
-          
-        if '~physics' in spec:
-          options.extend([ '-DELLIPTIC=OFF' ])
-          options.extend([ '-DPARABOLIC=OFF' ])
-          options.extend([ '-DHYPERBOLIC=OFF' ])
-          options.extend([ '-DSTABILIZED=OFF' ])
-          options.extend([ '-DPLASTICITY=OFF' ])
 
         if '+cubit' in spec['platoengine']:
           options.extend([ '-DPLATOANALYZE_CUBIT_ENABLED=ON' ])
