@@ -17,14 +17,15 @@ class Platoengine(CMakePackage):
 
     version('develop', branch='develop', preferred=True)
     version('2.0.2', tag='2.0.2')
-    
+
+    variant( 'openmp',         default=False,   description='Builds platoengine with OpenMP threading')    
     variant( 'regression',     default=True,    description='Add regression tests'            )
     variant( 'unit_testing',   default=True,    description='Add unit testing'                )
     variant( 'esp',            default=False,   description='Turn on esp'                     )
     variant( 'sierra_tests',   default=False,   description='Enable sierra testing'           )
     variant( 'snopt',          default=False,   description='Build with SNOPT'                )
     variant( 'python',         default=False,   description='Build and link with python. This option is needed for plugins that depend on python')
-    variant( 'cubit',          default=False,   description='Build shape optimization geometry that uses Cubit library in prebuilt binaries'                )
+    variant( 'cubit',          default=False,   description='Build shape optimization geometry that uses Cubit library in prebuilt binaries')
     variant( 'cmake_preset',   values=('none', 'default', 'dev_build'), default='default', description='Chooses a cmake configuration preset, which controls build parameters such as warnings' )
 
     depends_on( 'c', type="build")
@@ -34,6 +35,8 @@ class Platoengine(CMakePackage):
     depends_on( 'googletest', when='+unit_testing' )
     depends_on( 'boost+filesystem+serialization+system+program_options+regex+mpi+log')
     depends_on( 'trilinos@16_1_0_update_krino_api+exodus+chaco+shards+rol+tpetra~epetra~epetraext~mumps+boost+percept+krino+stk gotype=int cxxstd=17' )    
+    depends_on( 'trilinos+openmp', when='+openmp')
+    depends_on( 'kokkos+openmp+serial', when='+openmp')
     depends_on( 'esp@124Lin', type=('build', 'link', 'run'), when='+esp')
     depends_on( 'numdiff', when='+regression')
     depends_on( 'snopt', when='+snopt')
@@ -63,7 +66,8 @@ class Platoengine(CMakePackage):
                 self.define_from_variant("REGRESSION","regression"),
                 self.define_from_variant("SEACAS","regression"),
                 self.define_from_variant("LINK_WITH_PYTHON","python"),
-                self.define_from_variant("CUBIT_ENABLED","cubit")
+                self.define_from_variant("CUBIT_ENABLED","cubit"),
+                self.define_from_variant("OPENMP_ENABLED","openmp")
             ]
         )
 

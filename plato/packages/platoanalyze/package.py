@@ -45,7 +45,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'helmholtz',  default=True,     description='Compile with Helmholtz filter' )
     variant( 'unittests',  default=True,     description='Compile with unit tests' )
     variant( 'enginemesh', default=True,     description='Compile with enginemesh as default' )
-    variant( 'omega-h',    default=False,    description='Compile with enginemesh as default' )
+    variant( 'omega-h',    default=False,    description='Compile with omega-h as default' )
     variant( 'openmp',     default=False,    description='Compile with openmp'          )
     variant( 'tpetra',     default=False,    description='Compile with Tpetra'          )
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
@@ -62,12 +62,19 @@ class Platoanalyze(CMakePackage, CudaPackage):
 
     depends_on('cxx',type="build")
     depends_on('c',type="build")
+
     depends_on('platoengine')
+    depends_on('platoengine+unit_testing', when='+integration_tests')
+    depends_on('platoengine+unit_testing', when='+verificationtests')
+    depends_on('platoengine+openmp', when='+openmp')
+
     depends_on('trilinos@16_1_0_update_krino_api+kokkos+kokkoskernels+exodus+boost~epetra~epetraext gotype=int cxxstd=17')
     depends_on('trilinos+cuda+wrapper', when='+cuda')
     depends_on('trilinos+openmp', when='+openmp')
     depends_on('trilinos+amesos2+tpetra+kokkos+tacho', when='+tacho')
     depends_on('suite-sparse', when='+umfpack')
+    depends_on('suite-sparse+openmp', when='+umfpack+openmp')
+    depends_on('kokkos+openmp+serial', when='+openmp')
     depends_on('trilinos+tpetra+belos+ifpack2+amesos2+muelu+zoltan2',             when='+tpetra')
     depends_on('trilinos~tpetra~amesos2~ifpack2~belos~muelu~zoltan2',             when='~tpetra')
     depends_on('kokkos-nvcc-wrapper@4.7.00', when='+cuda')
@@ -76,8 +83,6 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('python@3.8:', type=('build', 'link', 'run'), when='+integration_tests')
     depends_on('py-numpy', when='+verificationtests')
     depends_on('py-numpy', when='+integration_tests')
-    depends_on('platoengine+unit_testing', when='+integration_tests')
-    depends_on('platoengine+unit_testing', when='+verificationtests')
     depends_on('arborx@1.7', when='+meshmap')
     depends_on('amgx', when='+amgx')
     depends_on('numdiff', when='+integration_tests')
@@ -117,6 +122,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
             [
                 self.define_from_variant("PLATOANALYZE_ENABLE_ENGINEMESH","enginemesh"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_CUDA","cuda"),
+                self.define_from_variant("PLATOANALYZE_ENABLE_OPENMP","openmp"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_MESHMAP","meshmap"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_TPETRA","tpetra"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_TACHO","tacho"),
