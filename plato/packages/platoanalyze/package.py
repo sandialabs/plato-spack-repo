@@ -68,7 +68,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('platoengine+unit_testing', when='+verificationtests')
     depends_on('platoengine+openmp', when='+openmp')
 
-    depends_on('trilinos@16_1_0_update_krino_api+kokkos+kokkoskernels+exodus+boost~epetra~epetraext gotype=int cxxstd=20')
+    depends_on('trilinos@16.2.0+kokkos+kokkoskernels+exodus+boost~epetra~epetraext gotype=int cxxstd=20')
     depends_on('trilinos+cuda+wrapper', when='+cuda')
     depends_on('trilinos+openmp', when='+openmp')
     depends_on('trilinos+amesos2+tpetra+kokkos+tacho', when='+tacho')

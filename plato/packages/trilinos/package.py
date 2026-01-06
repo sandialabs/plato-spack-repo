@@ -32,7 +32,9 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     """
 
     homepage = "https://trilinos.org/"
-    url = "https://github.com/trilinos/Trilinos/archive/refs/tags/trilinos-release-12-12-1.tar.gz"
+    def url_for_version(self, version):
+        version_for_url = str(version).replace('.', '-')
+        return f"https://github.com/trilinos/Trilinos/archive/refs/tags/trilinos-release-{version_for_url}.tar.gz"
     git = "https://github.com/trilinos/Trilinos.git"
 
     maintainers(
@@ -53,6 +55,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     version("master", branch="master")
     version("develop", branch="develop")
+    version("16.2.0", sha256="543aa56232d7c0cbe73705fab2d3b5524f11b15fef8917aa14de02d23a5ca418")
     version("16_1_0_update_krino_api", commit="fc8b0561871d5092aae01aa4a425729dc4471538")
     version("16_1_0_stk_segfault_fix", commit="93f000ec8736cc185d37046bfa07da7c5a694169") 
     version("16_0_1_krino_snapping", commit="9245c7c36eccff9a75b698385c6ab3d7186e2026") 
@@ -435,8 +438,9 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     
     # External Kokkos
+    depends_on("kokkos@4.7.01:", when="@16.2.0 +kokkos")
     depends_on("kokkos@4.7.00", when="@16_1_0_stk_segfault_fix,16_1_0_update_krino_api +kokkos")
-    depends_on("kokkos-kernels@4.7.00", when="+kokkoskernels")
+    depends_on("kokkos-kernels@4.7.01", when="+kokkoskernels")
     depends_on("kokkos-kernels~shared", when="+cuda_rdc")
     depends_on("kokkos-kernels~shared", when="+rocm_rdc")
     depends_on("kokkos@4.4.01", when="@16_0_1_krino_snapping +kokkos")
