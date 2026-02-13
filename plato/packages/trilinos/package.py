@@ -438,7 +438,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
 
     
     # External Kokkos
-    depends_on("kokkos@4.7.01:", when="@16.2.0 +kokkos")
+    depends_on("kokkos@4.7.01", when="@16.2.0 +kokkos")
     depends_on("kokkos@4.7.00", when="@16_1_0_stk_segfault_fix,16_1_0_update_krino_api +kokkos")
     depends_on("kokkos-kernels@4.7.01", when="+kokkoskernels")
     depends_on("kokkos-kernels~shared", when="+cuda_rdc")
