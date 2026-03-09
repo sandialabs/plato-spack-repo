@@ -531,6 +531,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('metis', when='+tacho') # Added by Plato
     
     # ###################### Patches ##########################
+    patch("cdfem_name.patch", when="@16: +krino") # Added by Plato
     patch("akri_tuple.patch", when="@=16.1.0 +krino") # Added by Plato
     patch("stk_bucket_inline_static.patch", when="@16_1_0_stk_segfault_fix,16_1_0_update_krino_api +stk") # Added by Plato
     patch("stk_ub_fix.patch", when="@16_1_0_stk_segfault_fix,16_1_0_update_krino_api +stk") # Added by Plato
@@ -550,7 +551,7 @@ class Trilinos(CMakePackage, CudaPackage, ROCmPackage):
         sha256="62272054f7cc644583c269e692c69f0a26af19e5a5bd262db3ea3de3447b3358",
         when="@:13.4 +complex",
     )
-
+    
     # workaround an NVCC bug with c++14 (https://github.com/trilinos/Trilinos/issues/6954)
     # avoid calling deprecated functions with CUDA-11
     patch("fix_cxx14_cuda11.patch", when="@13.0.0:13.0.1 cxxstd=14 ^cuda@11:")

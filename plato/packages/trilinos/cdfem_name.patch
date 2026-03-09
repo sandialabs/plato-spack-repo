@@ -1,0 +1,100 @@
+diff --git a/packages/krino/krino/krino_lib/Akri_OutputUtils.cpp b/packages/krino/krino/krino_lib/Akri_OutputUtils.cpp
+index 39ee7577ce0..d90bb5e3f21 100644
+--- a/packages/krino/krino/krino_lib/Akri_OutputUtils.cpp
++++ b/packages/krino/krino/krino_lib/Akri_OutputUtils.cpp
+@@ -46,7 +46,20 @@ static void enable_io_parts(const stk::mesh::PartVector & parts)
+     stk::io::put_io_part_attribute(*part);
+ }
+ 
+-void output_mesh_with_fields_and_properties(const stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector, const std::string & fileName, int step, double time, Ioss::PropertyManager &properties, stk::io::DatabasePurpose purpose)
++namespace{
++bool keep_name(const std::string& name,
++                      const std::vector<std::string>& patterns)
++{
++  if (patterns.empty()) return true; // backward compatible: keep all
++
++  for (const auto& p : patterns) {
++    if (name.find(p) != std::string::npos) return true;
++  }
++  return false;
++}
++
++
++void output_mesh_with_fields_and_properties(const stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector, const std::string & fileName, int step, double time, Ioss::PropertyManager &properties, stk::io::DatabasePurpose purpose,  const std::vector<std::string>& keepFieldPatterns)
+ {
+   const stk::mesh::PartVector emptyIoParts = turn_off_output_for_empty_io_parts(mesh, outputSelector);
+ 
+@@ -65,16 +78,22 @@ void output_mesh_with_fields_and_properties(const stk::mesh::BulkData & mesh, co
+     ioRegion->property_add(Ioss::Property(stk::io::s_ignoreDisconnectedNodes, filterDisconnectedNodes));
+   }
+ 
+-  if (step > 0)
++if (step > 0)
++{
++  for (stk::mesh::FieldBase* field : stkIo.bulk_data().mesh_meta_data().get_fields())
+   {
+-    const stk::mesh::FieldVector fields = stkIo.bulk_data().mesh_meta_data().get_fields();
+-    for (stk::mesh::FieldBase * field : fields)
+-    {
+-      const Ioss::Field::RoleType * fieldRole = stk::io::get_field_role(*field);
+-      if (fieldRole == nullptr || *fieldRole == Ioss::Field::TRANSIENT)
+-        stkIo.add_field(outputFileIndex, *field);
+-    }
++    if (!field) continue;
++
++    const std::string& name = field->name();
++    if (!keep_name(name, keepFieldPatterns)) continue;
++
++    const Ioss::Field::RoleType* role = stk::io::get_field_role(*field);
++    const bool isTransient = (role == nullptr) || (*role == Ioss::Field::TRANSIENT);
++    if (!isTransient) continue;
++
++    stkIo.add_field(outputFileIndex, *field);
+   }
++}
+ 
+   stkIo.set_active_selector(outputSelector);
+   stkIo.set_subset_selector(outputFileIndex, outputSelector);
+@@ -87,6 +106,7 @@ void output_mesh_with_fields_and_properties(const stk::mesh::BulkData & mesh, co
+ 
+   enable_io_parts(emptyIoParts);
+ }
++}//anonymous namespace
+ 
+ static void fix_ownership_for_output_selector(stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector)
+ {
+@@ -100,17 +120,18 @@ void fix_ownership_and_output_composed_mesh_with_fields(stk::mesh::BulkData & me
+   output_composed_mesh_with_fields(mesh, outputSelector, fileName, step, time, purpose);
+ }
+ 
+-void output_composed_mesh_with_fields(const stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector, const std::string & fileName, int step, double time, stk::io::DatabasePurpose purpose)
++void output_composed_mesh_with_fields(const stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector, const std::string & fileName, int step, double time, stk::io::DatabasePurpose purpose,const std::vector<std::string>& keepFieldPatterns)
+ {
+   Ioss::PropertyManager properties;
++  properties.add(Ioss::Property("MAXIMUM_NAME_LENGTH", 180));
+   enable_compose_results_if_supported(properties);
+-  output_mesh_with_fields_and_properties(mesh, outputSelector, fileName, step, time, properties, purpose);
++  output_mesh_with_fields_and_properties(mesh, outputSelector, fileName, step, time, properties, purpose, keepFieldPatterns);
+ }
+ 
+ void output_mesh_with_fields(const stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector, const std::string & fileName, int step, double time, stk::io::DatabasePurpose purpose)
+ {
+   Ioss::PropertyManager properties;
+-  output_mesh_with_fields_and_properties(mesh, outputSelector, fileName, step, time, properties, purpose);
++  output_mesh_with_fields_and_properties(mesh, outputSelector, fileName, step, time, properties, purpose, {});
+ }
+ 
+ std::string create_filename_from_base_filename(const std::string & baseFileName, const int numFileRevisions)
+diff --git a/packages/krino/krino/krino_lib/Akri_OutputUtils.hpp b/packages/krino/krino/krino_lib/Akri_OutputUtils.hpp
+index 4db7e9f6405..2d995cf5055 100644
+--- a/packages/krino/krino/krino_lib/Akri_OutputUtils.hpp
++++ b/packages/krino/krino/krino_lib/Akri_OutputUtils.hpp
+@@ -23,7 +23,7 @@ class Faceted_Surface;
+ 
+ bool is_parallel_io_enabled();
+ void output_mesh_with_fields(const stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector, const std::string & fileName, int step, double time, stk::io::DatabasePurpose purpose = stk::io::WRITE_RESULTS);
+-void output_composed_mesh_with_fields(const stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector, const std::string & fileName, int step, double time, stk::io::DatabasePurpose purpose = stk::io::WRITE_RESULTS);
++void output_composed_mesh_with_fields(const stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector, const std::string & fileName, int step, double time, stk::io::DatabasePurpose purpose = stk::io::WRITE_RESULTS, const std::vector<std::string>& keepFieldPatterns = {});
+ void fix_ownership_and_output_composed_mesh_with_fields(stk::mesh::BulkData & mesh, const stk::mesh::Selector & outputSelector, const std::string & fileName, int step, double time, stk::io::DatabasePurpose purpose = stk::io::WRITE_RESULTS);
+ std::string create_file_name(const std::string & fileBaseName, const int fileIndex);
+ std::string create_filename_from_base_filename(const std::string & baseFileName, const int numFileRevisions);
