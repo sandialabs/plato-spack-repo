@@ -42,22 +42,15 @@ class Platoanalyze(CMakePackage, CudaPackage):
     variant( 'cuda',       default=True,     description='Compile with Nvidia CUDA'     )
     variant( 'amgx',       default=True,     description='Compile with AMGX'            )
     variant( 'meshmap',    default=True,     description='Compile with MeshMap'         )
-    variant( 'helmholtz',  default=True,     description='Compile with Helmholtz filter' )
     variant( 'unittests',  default=True,     description='Compile with unit tests' )
     variant( 'enginemesh', default=True,     description='Compile with enginemesh as default' )
     variant( 'omega-h',    default=False,    description='Compile with omega-h as default' )
     variant( 'openmp',     default=False,    description='Compile with openmp'          )
-    variant( 'tpetra',     default=False,    description='Compile with Tpetra'          )
     variant( 'tacho',      default=False,    description='Compile with Tacho'           )
     variant( 'umfpack',    default=False,    description='Compile with UMFPACK'         )
-
     variant( 'integration_tests', default=True, description='Compile with engine integration tests')
     variant( 'verificationtests', default=True, description='Compile with verification tests' )
     variant( 'verificationdoc', default=False,  description='Compile with VerificationDoc target' )
-    variant( 'hex_elements', default=False, description='Compile with hex elements' ) 
-    
-    variant( 'all_penalty', default=False, description='Compile with all penalization schemes, including RAMP and Heaviside' )
-
     variant( 'cmake_preset',   values=('none', 'default', 'dev_build'), default='default', description='Chooses a cmake configuration preset, which controls build parameters such as warnings' )
 
     depends_on('cxx',type="build")
@@ -68,15 +61,13 @@ class Platoanalyze(CMakePackage, CudaPackage):
     depends_on('platoengine+unit_testing', when='+verificationtests')
     depends_on('platoengine+openmp', when='+openmp')
 
-    depends_on('trilinos@16.2.0+kokkos+kokkoskernels+exodus+boost~epetra~epetraext gotype=int cxxstd=20')
+    depends_on('trilinos@16.2.0+kokkos+kokkoskernels+exodus+boost~epetra~epetraext+tpetra+belos+ifpack2+amesos2+muelu+zoltan2 gotype=int cxxstd=20')
     depends_on('trilinos+cuda+wrapper', when='+cuda')
     depends_on('trilinos+openmp', when='+openmp')
     depends_on('trilinos+amesos2+tpetra+kokkos+tacho', when='+tacho')
     depends_on('suite-sparse', when='+umfpack')
     depends_on('suite-sparse+openmp', when='+umfpack+openmp')
     depends_on('kokkos+openmp+serial', when='+openmp')
-    depends_on('trilinos+tpetra+belos+ifpack2+amesos2+muelu+zoltan2',             when='+tpetra')
-    depends_on('trilinos~tpetra~amesos2~ifpack2~belos~muelu~zoltan2',             when='~tpetra')
     depends_on('kokkos-nvcc-wrapper@4.7.00', when='+cuda')
     depends_on('cmake@3.21.0:', type='build')   
     depends_on('python@3.8:', type=('build', 'link', 'run'), when='+verificationtests')
@@ -124,14 +115,10 @@ class Platoanalyze(CMakePackage, CudaPackage):
                 self.define_from_variant("PLATOANALYZE_ENABLE_CUDA","cuda"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_OPENMP","openmp"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_MESHMAP","meshmap"),
-                self.define_from_variant("PLATOANALYZE_ENABLE_TPETRA","tpetra"),
                 self.define_from_variant("PLATOANALYZE_ENABLE_TACHO","tacho"),
-                self.define_from_variant("HELMHOLTZ","helmholtz"),
                 self.define_from_variant("PLATOANALYZE_UNIT_TEST","unittests"),
                 self.define_from_variant("PLATOANALYZE_INTEGRATION_TESTS","integration_tests"),
                 self.define_from_variant("PLATOANALYZE_SMOKE_TESTS","verificationtests"),
-                self.define_from_variant("HEX_ELEMENTS","hex_elements"),
-                self.define_from_variant("ALL_PENALTY","all_penalty"),
             ]
         )
 
