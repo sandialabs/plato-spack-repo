@@ -37,7 +37,7 @@ class Platoanalyze(CMakePackage, CudaPackage):
     maintainers = ['acsokol', 'bwclark', 'ralberd', 'rawildm', 'shardes']
 
     version('develop', branch='develop', submodules=True, preferred=True)
-    version('release-v0.1.0', branch='release-v0.1.0', submodules=True)
+    version('2.0.3', tag='2.0.3')
 
     variant( 'cuda',       default=True,     description='Compile with Nvidia CUDA'     )
     variant( 'amgx',       default=True,     description='Compile with AMGX'            )

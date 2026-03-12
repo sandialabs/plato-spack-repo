@@ -16,7 +16,7 @@ class Platoengine(CMakePackage):
     maintainers = ['acsokol', 'bwclark', 'ralberd', 'rawildm', 'shardes']
 
     version('develop', branch='develop', preferred=True)
-    version('2.0.2', tag='2.0.2')
+    version('2.0.3', tag='2.0.3')
 
     variant( 'openmp',         default=False,   description='Builds platoengine with OpenMP threading')    
     variant( 'regression',     default=True,    description='Add regression tests'            )
